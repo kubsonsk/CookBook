@@ -1,0 +1,6 @@
+{
+  "name": "CookBook",
+  "description": "A comprehensive PWA for storing, organizing, and discovering recipes. Features AI-powered recipe extraction from URLs, ingredient scaling, and category-based organization.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}

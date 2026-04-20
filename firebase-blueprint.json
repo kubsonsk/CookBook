@@ -1,0 +1,48 @@
+{
+  "entities": {
+    "Recipe": {
+      "title": "Recipe",
+      "description": "Represents a cooking recipe with ingredients, steps, and metadata.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "heroImageUrl": { "type": "string" },
+        "videoUrl": { "type": "string" },
+        "servings": { "type": "number" },
+        "prepTime": { "type": "number", "description": "Prep time in minutes" },
+        "categories": { "type": "array", "items": { "type": "string" } },
+        "ingredients": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "amount": { "type": "number" },
+              "unit": { "type": "string" }
+            }
+          }
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "text": { "type": "string" },
+              "imageUrl": { "type": "string" }
+            }
+          }
+        },
+        "ownerId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "ownerId", "ingredients", "steps"]
+    }
+  },
+  "firestore": {
+    "/recipes/{recipeId}": {
+      "schema": "Recipe",
+      "description": "Collection of user recipes."
+    }
+  }
+}
