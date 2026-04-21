@@ -5,7 +5,7 @@ steps:
       'build', 
       '-t', 'gcr.io/$PROJECT_ID/cookbook:$COMMIT_SHA',
       '--build-arg', 'GEMINI_API_KEY=$_GEMINI_API_KEY',
-      '--platform linux/amd64',
+      '--platform', 'linux/amd64',
       '.'
     ]
 
