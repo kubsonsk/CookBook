@@ -27,6 +27,8 @@ steps:
       - '--platform'
       - 'managed'
       - '--allow-unauthenticated'
+      - '--port'
+      - '80'
 
 options:
   logging: CLOUD_LOGGING_ONLY
