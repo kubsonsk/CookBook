@@ -184,8 +184,8 @@ jobs:
   fallthrough:
     needs:
       - 'dispatch'
-      - 'review'
-      - 'triage'
+      # - 'review'
+      # - 'triage'
       - 'invoke'
       - 'plan-execute'
     if: |-
