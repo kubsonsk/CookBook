@@ -11,3 +11,17 @@ export function formatTime(minutes: number): string {
   const m = minutes % 60;
   return m > 0 ? `${h}h ${m}m` : `${h}h`;
 }
+
+export function getLocalStorageItem(key: string): string | null {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem(key);
+  }
+  return null;
+}
+
+export function setLocalStorageItem(key: string, value: string): void {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(key, value);
+  }
+}
+

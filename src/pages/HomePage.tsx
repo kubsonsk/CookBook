@@ -3,15 +3,22 @@ import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestor
 import { db, auth } from '../lib/firebase';
 import { Recipe, CATEGORIES } from '../types';
 import { Link } from 'react-router-dom';
-import { Search, Clock, Star, Plus, ChefHat } from 'lucide-react';
+import { Clock, Star, Plus, ChefHat, LayoutGrid, List, Filter } from 'lucide-react'; // Removed Search icon import
 import { motion } from 'framer-motion';
-import { cn, formatTime } from '../lib/utils';
+import { cn, formatTime, getLocalStorageItem, setLocalStorageItem } from '../lib/utils';
+import { RecipeCard } from '../components/RecipeCard';
+import { RecipeListItem } from '../components/RecipeListItem';
+import { FilterModal } from '../components/FilterModal';
 
 export default function HomePage() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState<'card' | 'list'>(
+    (getLocalStorageItem('recipeViewMode') as 'card' | 'list') || 'card'
+  );
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
   useEffect(() => {
     if (!auth.currentUser) return;
@@ -31,6 +38,10 @@ export default function HomePage() {
     return () => unsubscribe();
   }, []);
 
+  useEffect(() => {
+    setLocalStorageItem('recipeViewMode', viewMode);
+  }, [viewMode]);
+
   const filteredRecipes = recipes.filter(r => {
     const matchesSearch = r.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       r.ingredients.some(i => i.name.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -43,43 +54,39 @@ export default function HomePage() {
   return (
     <div className="space-y-6">
       <div className="space-y-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-          <input
-            type="text"
-            placeholder="Search recipes or ingredients..."
-            className="w-full pl-10 pr-4 py-3 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-500/20 transition-shadow"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
+        {/* Removed the search bar div entirely */}
 
-        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide no-scrollbar">
-          <button
-            onClick={() => setSelectedCategory(null)}
-            className={cn(
-              "px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all",
-              !selectedCategory 
-                ? "bg-orange-500 text-white shadow-lg shadow-orange-500/20" 
-                : "bg-white dark:bg-zinc-900 text-slate-600 dark:text-zinc-400 border border-slate-200 dark:border-zinc-800"
-            )}
-          >
-            All
-          </button>
-          {CATEGORIES.map(cat => (
+        {/* View Toggle - positioned below search bar, above recipe list */}
+        <div className="flex justify-between items-center mt-4">
+          <h2 className="text-xl font-bold uppercase tracking-tight text-slate-800 dark:text-zinc-100">
+            All Recipes
+          </h2>
+          <div className="flex gap-2 p-1 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-full">
             <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
+              onClick={() => setViewMode('card')}
               className={cn(
-                "px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all",
-                selectedCategory === cat
-                  ? "bg-orange-500 text-white shadow-lg shadow-orange-500/20"
-                  : "bg-white dark:bg-zinc-900 text-slate-600 dark:text-zinc-400 border border-slate-200 dark:border-zinc-800"
+                "p-1.5 rounded-full transition-all",
+                viewMode === 'card'
+                  ? "bg-orange-500 text-white shadow-md shadow-orange-500/20"
+                  : "text-slate-400 hover:text-orange-500"
               )}
+              aria-label="Show as cards"
             >
-              {cat}
+              <LayoutGrid size={18} />
             </button>
-          ))}
+            <button
+              onClick={() => setViewMode('list')}
+              className={cn(
+                "p-1.5 rounded-full transition-all",
+                viewMode === 'list'
+                  ? "bg-orange-500 text-white shadow-md shadow-orange-500/20"
+                  : "text-slate-400 hover:text-orange-500"
+              )}
+              aria-label="Show as list"
+            >
+              <List size={18} />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -90,49 +97,11 @@ export default function HomePage() {
           ))
         ) : filteredRecipes.length > 0 ? (
           filteredRecipes.map((recipe, index) => (
-            <Link key={recipe.id} to={`/recipe/${recipe.id}`}>
-              <motion.div
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="group relative flex bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden border border-slate-100 dark:border-zinc-800 hover:border-orange-500/30 dark:hover:border-orange-500/30 transition-all active:scale-[0.98] h-32"
-              >
-                <div className="w-32 h-full flex-shrink-0">
-                  {recipe.heroImageUrl ? (
-                    <img 
-                      src={recipe.heroImageUrl} 
-                      alt={recipe.title} 
-                      className="w-full h-full object-cover"
-                      referrerPolicy="no-referrer"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-orange-100 dark:bg-orange-950 flex items-center justify-center text-orange-500">
-                      <ChefHat size={32} />
-                    </div>
-                  )}
-                </div>
-                <div className="flex-1 p-4 flex flex-col justify-between">
-                  <div>
-                    <h3 className="font-bold text-lg leading-tight line-clamp-1 group-hover:text-orange-500 transition-colors uppercase tracking-tight">
-                      {recipe.title}
-                    </h3>
-                    <div className="flex gap-1 mt-1 flex-wrap">
-                      {recipe.categories?.slice(0, 2).map(c => (
-                        <span key={c} className="text-[10px] bg-slate-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded uppercase tracking-wider text-slate-500">
-                          {c}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-4 text-xs text-slate-400 dark:text-zinc-500">
-                    <div className="flex items-center gap-1">
-                      <Clock size={14} />
-                      <span>{recipe.prepTime ? formatTime(recipe.prepTime) : 'N/A'}</span>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            </Link>
+            viewMode === 'card' ? (
+              <RecipeCard key={recipe.id} recipe={recipe} index={index} />
+            ) : (
+              <RecipeListItem key={recipe.id} recipe={recipe} index={index} />
+            )
           ))
         ) : (
           <div className="text-center py-20 bg-white dark:bg-zinc-900 rounded-3xl border border-dashed border-slate-200 dark:border-zinc-800">
@@ -144,6 +113,26 @@ export default function HomePage() {
           </div>
         )}
       </div>
+
+      {/* Floating Filter Button */}
+      <button
+        onClick={() => setIsFilterModalOpen(true)}
+        className="fixed bottom-20 right-6 p-4 bg-orange-500 text-white rounded-full shadow-lg hover:bg-orange-600 transition-colors z-40" // Changed bottom-6 to bottom-20
+        aria-label="Open filter options"
+      >
+        <Filter size={24} />
+      </button>
+
+      {/* Filter Modal - passing searchTerm and setSearchTerm */}
+      <FilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        selectedCategory={selectedCategory}
+        onSelectCategory={setSelectedCategory}
+        searchTerm={searchTerm}
+        onSearchTermChange={setSearchTerm}
+      />
     </div>
   );
 }
+
