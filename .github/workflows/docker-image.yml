@@ -1,0 +1,48 @@
+name: Build and Deploy to Cloud Run
+
+on:
+  push:
+    branches:
+      - main  # Adjust this if your branch is named differently
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 1. Authenticate to Google Cloud
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+
+      # 2. Set up gcloud CLI
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
+
+      # 3. Authorize Docker to push to GCR
+      - name: 'Configure Docker'
+        run: gcloud auth configure-docker --quiet
+
+      # 4. Build and Push the image
+      # We use the same tags and platform as your cloudbuild.yaml
+      - name: Build and Push Container
+        run: |-
+          docker build \
+            -t "gcr.io/${{ secrets.GCP_PROJECT_ID }}/cookbook:${{ github.sha }}" \
+            --build-arg GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }} \
+            --platform linux/amd64 \
+            .
+          docker push "gcr.io/${{ secrets.GCP_PROJECT_ID }}/cookbook:${{ github.sha }}"
+
+      # 5. Deploy to Cloud Run
+      - name: Deploy to Cloud Run
+        uses: 'google-github-actions/deploy-cloudrun@v2'
+        with:
+          service: 'cookbook'
+          image: 'gcr.io/${{ secrets.GCP_PROJECT_ID }}/cookbook:${{ github.sha }}'
+          region: 'us-central1'
+          flags: '--allow-unauthenticated --port=80'
