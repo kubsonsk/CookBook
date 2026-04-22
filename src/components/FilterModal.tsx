@@ -7,7 +7,7 @@ import { cn } from '../lib/utils';
 interface FilterModalProps {
   isOpen: boolean;
   onClose: () => void;
-  selectedCategory: string | null;
+  selectedCategories: string[];
   onSelectCategory: (category: string | null) => void;
   searchTerm: string; // New prop for search term
   onSearchTermChange: (term: string) => void; // New prop for search term change
@@ -16,7 +16,7 @@ interface FilterModalProps {
 export const FilterModal: React.FC<FilterModalProps> = ({
   isOpen,
   onClose,
-  selectedCategory,
+  selectedCategories,
   onSelectCategory,
   searchTerm, // Destructure new prop
   onSearchTermChange, // Destructure new prop
@@ -41,9 +41,22 @@ export const FilterModal: React.FC<FilterModalProps> = ({
           >
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold">Filter Recipes</h2>
-              <button onClick={onClose} className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800">
-                <X size={24} />
-              </button>
+              <div className="flex gap-2">
+                {(searchTerm || selectedCategories.length > 0) && (
+                  <button
+                    onClick={() => {
+                      onSearchTermChange('');
+                      onSelectCategory(null);
+                    }}
+                    className="text-sm font-medium text-orange-500 hover:text-orange-600 px-2 py-1"
+                  >
+                    Clear all
+                  </button>
+                )}
+                <button onClick={onClose} className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-800">
+                  <X size={24} />
+                </button>
+              </div>
             </div>
 
             {/* Search Bar inside Modal */}
@@ -63,7 +76,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                 onClick={() => { onSelectCategory(null); }} // Removed onClose here, user might want to search
                 className={cn(
                   "px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all",
-                  !selectedCategory
+                  selectedCategories.length === 0
                     ? "bg-orange-500 text-white shadow-lg shadow-orange-500/20"
                     : "bg-white dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 border border-slate-200 dark:border-zinc-800"
                 )}
@@ -76,7 +89,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                   onClick={() => { onSelectCategory(cat); }} // Removed onClose here
                   className={cn(
                     "px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all",
-                    selectedCategory === cat
+                    selectedCategories.includes(cat)
                       ? "bg-orange-500 text-white shadow-lg shadow-orange-500/20"
                       : "bg-white dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 border border-slate-200 dark:border-zinc-800"
                   )}

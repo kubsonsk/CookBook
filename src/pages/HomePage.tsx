@@ -13,7 +13,7 @@ import { FilterModal } from '../components/FilterModal';
 export default function HomePage() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'card' | 'list'>(
     (getLocalStorageItem('recipeViewMode') as 'card' | 'list') || 'card'
@@ -42,14 +42,29 @@ export default function HomePage() {
     setLocalStorageItem('recipeViewMode', viewMode);
   }, [viewMode]);
 
+  const toggleCategory = (category: string | null) => {
+    if (category === null) {
+      setSelectedCategories([]);
+    } else {
+      setSelectedCategories(prev => 
+        prev.includes(category) 
+          ? prev.filter(c => c !== category)
+          : [...prev, category]
+      );
+    }
+  };
+
   const filteredRecipes = recipes.filter(r => {
     const matchesSearch = r.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       r.ingredients.some(i => i.name.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    const matchesCategory = !selectedCategory || r.categories?.includes(selectedCategory);
+    const matchesCategory = selectedCategories.length === 0 || 
+      r.categories?.some(c => selectedCategories.includes(c));
     
     return matchesSearch && matchesCategory;
   });
+
+  const activeFilterCount = (searchTerm ? 1 : 0) + selectedCategories.length;
 
   return (
     <div className="space-y-6">
@@ -114,21 +129,28 @@ export default function HomePage() {
         )}
       </div>
 
-      {/* Floating Filter Button */}
+      {/* Floating Filter Button with Badge */}
       <button
         onClick={() => setIsFilterModalOpen(true)}
-        className="fixed bottom-20 right-6 p-4 bg-orange-500 text-white rounded-full shadow-lg hover:bg-orange-600 transition-colors z-40" // Changed bottom-6 to bottom-20
+        className="fixed bottom-20 right-6 p-4 bg-orange-500 text-white rounded-full shadow-lg hover:bg-orange-600 transition-colors z-40"
         aria-label="Open filter options"
       >
-        <Filter size={24} />
+        <div className="relative">
+          <Filter size={24} />
+          {activeFilterCount > 0 && (
+            <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-white text-[10px] font-bold text-orange-500 shadow-sm">
+              {activeFilterCount}
+            </span>
+          )}
+        </div>
       </button>
 
       {/* Filter Modal - passing searchTerm and setSearchTerm */}
       <FilterModal
         isOpen={isFilterModalOpen}
         onClose={() => setIsFilterModalOpen(false)}
-        selectedCategory={selectedCategory}
-        onSelectCategory={setSelectedCategory}
+        selectedCategories={selectedCategories}
+        onSelectCategory={toggleCategory}
         searchTerm={searchTerm}
         onSearchTermChange={setSearchTerm}
       />
