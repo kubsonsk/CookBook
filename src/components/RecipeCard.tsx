@@ -38,9 +38,9 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, index }) => (
             {recipe.title}
           </h3>
           <div className="flex gap-1 mt-1 flex-wrap">
-            {recipe.categories?.slice(0, 2).map(c => (
-              <span key={c} className="text-[10px] bg-slate-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded uppercase tracking-wider text-slate-500">
-                {c}
+            {recipe.tags?.slice(0, 2).map(t => (
+              <span key={t} className="text-[10px] bg-slate-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded uppercase tracking-wider text-slate-500">
+                {t}
               </span>
             ))}
           </div>

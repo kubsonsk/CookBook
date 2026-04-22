@@ -10,7 +10,7 @@
         "videoUrl": { "type": "string" },
         "servings": { "type": "number" },
         "prepTime": { "type": "number", "description": "Prep time in minutes" },
-        "categories": { "type": "array", "items": { "type": "string" } },
+        "tags": { "type": "array", "items": { "type": "string" } },
         "ingredients": {
           "type": "array",
           "items": {

@@ -130,9 +130,9 @@ export default function RecipeDetailPage() {
       <div>
         <h1 className="text-3xl font-black uppercase tracking-tighter leading-tight">{recipe.title}</h1>
         <div className="flex flex-wrap gap-2 mt-2">
-          {recipe.categories?.map(c => (
-            <span key={c} className="px-3 py-1 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-full text-xs font-bold uppercase tracking-widest text-slate-600 dark:text-zinc-400">
-              {c}
+          {recipe.tags?.map(t => (
+            <span key={t} className="px-3 py-1 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-full text-xs font-bold uppercase tracking-widest text-slate-600 dark:text-zinc-400">
+              {t}
             </span>
           ))}
         </div>

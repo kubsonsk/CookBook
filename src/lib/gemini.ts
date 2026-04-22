@@ -5,7 +5,8 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY as string });
 export async function extractRecipeFromUrl(url: string) {
   const prompt = `Extract recipe data from this URL: ${url}. 
   Return the data in a structured JSON format following the recipe schema. 
-  Include title, hero image (if found), portions/servings, prep time (in minutes), categories, ingredients (strictly with name, amount as number, and unit), and steps (with text and image URL if found).`;
+  Include title, hero image (if found), portions/servings, prep time (in minutes), ingredients (strictly with name, amount as number, and unit), and steps (with text and image URL if found). 
+  Do not include any tags or categories.`;
 
   const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",
@@ -19,7 +20,6 @@ export async function extractRecipeFromUrl(url: string) {
           heroImageUrl: { type: Type.STRING },
           servings: { type: Type.NUMBER },
           prepTime: { type: Type.NUMBER },
-          categories: { type: Type.ARRAY, items: { type: Type.STRING } },
           ingredients: {
             type: Type.ARRAY,
             items: {

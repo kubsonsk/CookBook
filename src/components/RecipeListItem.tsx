@@ -43,9 +43,9 @@ export const RecipeListItem: React.FC<RecipeListItemProps> = ({ recipe, index })
               <span>{formatTime(recipe.prepTime)}</span>
             </div>
           )}
-          {recipe.categories && recipe.categories.length > 0 && (
+          {recipe.tags && recipe.tags.length > 0 && (
             <span className="text-[10px] bg-slate-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded uppercase tracking-wider text-slate-500">
-              {recipe.categories[0]}
+              {recipe.tags[0]}
             </span>
           )}
         </div>

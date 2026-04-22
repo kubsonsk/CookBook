@@ -16,7 +16,7 @@ export interface Recipe {
   videoUrl?: string;
   servings: number;
   prepTime?: number;
-  categories: string[];
+  tags: string[];
   ingredients: Ingredient[];
   steps: Step[];
   ownerId: string;
@@ -24,6 +24,4 @@ export interface Recipe {
   updatedAt?: any;
 }
 
-export type Category = 'Breakfast' | 'Lunch' | 'Dinner' | 'Snack' | 'Dessert' | 'Appetizer' | 'Side' | 'Drink';
-
-export const CATEGORIES: Category[] = ['Breakfast', 'Lunch', 'Dinner', 'Snack', 'Dessert', 'Appetizer', 'Side', 'Drink'];
+export const DEFAULT_TAGS = ['Breakfast', 'Lunch', 'Dinner', 'Snack', 'Dessert', 'Appetizer', 'Side', 'Drink'];

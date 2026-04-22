@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
-import { Recipe, CATEGORIES } from '../types';
+import { Recipe, DEFAULT_TAGS } from '../types';
 import { Link } from 'react-router-dom';
 import { Clock, Star, Plus, ChefHat, LayoutGrid, List, Filter } from 'lucide-react'; // Removed Search icon import
 import { motion } from 'framer-motion';
@@ -13,7 +13,7 @@ import { FilterModal } from '../components/FilterModal';
 export default function HomePage() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'card' | 'list'>(
     (getLocalStorageItem('recipeViewMode') as 'card' | 'list') || 'card'
@@ -42,29 +42,34 @@ export default function HomePage() {
     setLocalStorageItem('recipeViewMode', viewMode);
   }, [viewMode]);
 
-  const toggleCategory = (category: string | null) => {
-    if (category === null) {
-      setSelectedCategories([]);
+  const toggleTag = (tag: string | null) => {
+    if (tag === null) {
+      setSelectedTags([]);
     } else {
-      setSelectedCategories(prev => 
-        prev.includes(category) 
-          ? prev.filter(c => c !== category)
-          : [...prev, category]
+      setSelectedTags(prev => 
+        prev.includes(tag) 
+          ? prev.filter(t => t !== tag)
+          : [...prev, tag]
       );
     }
   };
+
+  const availableTags = Array.from(new Set([
+    ...DEFAULT_TAGS,
+    ...recipes.flatMap(r => r.tags || [])
+  ])).sort();
 
   const filteredRecipes = recipes.filter(r => {
     const matchesSearch = r.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       r.ingredients.some(i => i.name.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    const matchesCategory = selectedCategories.length === 0 || 
-      r.categories?.some(c => selectedCategories.includes(c));
+    const matchesTag = selectedTags.length === 0 || 
+      r.tags?.some(t => selectedTags.includes(t));
     
-    return matchesSearch && matchesCategory;
+    return matchesSearch && matchesTag;
   });
 
-  const activeFilterCount = (searchTerm ? 1 : 0) + selectedCategories.length;
+  const activeFilterCount = (searchTerm ? 1 : 0) + selectedTags.length;
 
   return (
     <div className="space-y-6">
@@ -149,8 +154,9 @@ export default function HomePage() {
       <FilterModal
         isOpen={isFilterModalOpen}
         onClose={() => setIsFilterModalOpen(false)}
-        selectedCategories={selectedCategories}
-        onSelectCategory={toggleCategory}
+        selectedTags={selectedTags}
+        onSelectTag={toggleTag}
+        availableTags={availableTags}
         searchTerm={searchTerm}
         onSearchTermChange={setSearchTerm}
       />

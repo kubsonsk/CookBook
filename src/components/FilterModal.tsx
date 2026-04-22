@@ -1,14 +1,14 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Search } from 'lucide-react'; // Import Search icon
-import { CATEGORIES } from '../types';
 import { cn } from '../lib/utils';
 
 interface FilterModalProps {
   isOpen: boolean;
   onClose: () => void;
-  selectedCategories: string[];
-  onSelectCategory: (category: string | null) => void;
+  selectedTags: string[];
+  onSelectTag: (tag: string | null) => void;
+  availableTags: string[];
   searchTerm: string; // New prop for search term
   onSearchTermChange: (term: string) => void; // New prop for search term change
 }
@@ -16,8 +16,9 @@ interface FilterModalProps {
 export const FilterModal: React.FC<FilterModalProps> = ({
   isOpen,
   onClose,
-  selectedCategories,
-  onSelectCategory,
+  selectedTags,
+  onSelectTag,
+  availableTags,
   searchTerm, // Destructure new prop
   onSearchTermChange, // Destructure new prop
 }) => {
@@ -42,11 +43,11 @@ export const FilterModal: React.FC<FilterModalProps> = ({
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold">Filter Recipes</h2>
               <div className="flex gap-2">
-                {(searchTerm || selectedCategories.length > 0) && (
+                {(searchTerm || selectedTags.length > 0) && (
                   <button
                     onClick={() => {
                       onSearchTermChange('');
-                      onSelectCategory(null);
+                      onSelectTag(null);
                     }}
                     className="text-sm font-medium text-orange-500 hover:text-orange-600 px-2 py-1"
                   >
@@ -73,28 +74,28 @@ export const FilterModal: React.FC<FilterModalProps> = ({
 
             <div className="flex flex-wrap gap-2 mt-4">
               <button
-                onClick={() => { onSelectCategory(null); }} // Removed onClose here, user might want to search
+                onClick={() => { onSelectTag(null); }} // Removed onClose here, user might want to search
                 className={cn(
                   "px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all",
-                  selectedCategories.length === 0
+                  selectedTags.length === 0
                     ? "bg-orange-500 text-white shadow-lg shadow-orange-500/20"
-                    : "bg-white dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 border border-slate-200 dark:border-zinc-800"
+                    : "bg-white dark:bg-zinc-900 text-slate-600 dark:text-zinc-400 border border-slate-200 dark:border-zinc-800"
                 )}
               >
                 All
               </button>
-              {CATEGORIES.map(cat => (
+              {availableTags.map(tag => (
                 <button
-                  key={cat}
-                  onClick={() => { onSelectCategory(cat); }} // Removed onClose here
+                  key={tag}
+                  onClick={() => { onSelectTag(tag); }} // Removed onClose here
                   className={cn(
                     "px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all",
-                    selectedCategories.includes(cat)
+                    selectedTags.includes(tag)
                       ? "bg-orange-500 text-white shadow-lg shadow-orange-500/20"
                       : "bg-white dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 border border-slate-200 dark:border-zinc-800"
                   )}
                 >
-                  {cat}
+                  {tag}
                 </button>
               ))}
             </div>
