@@ -77,13 +77,6 @@ export default function SettingsPage() {
       <section className="space-y-4">
         <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-zinc-500 ml-4">About</h3>
         <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-slate-100 dark:border-zinc-800 overflow-hidden shadow-sm">
-          <div className="flex items-center justify-between p-4 border-b border-slate-50 dark:border-zinc-800/50">
-            <div className="flex items-center gap-3 text-slate-600 dark:text-zinc-400">
-              <Shield size={20} />
-              <span className="font-bold">Privacy</span>
-            </div>
-            <ChevronRight size={18} className="text-slate-200" />
-          </div>
           <div className="flex items-center justify-between p-4">
             <div className="flex items-center gap-3 text-slate-600 dark:text-zinc-400">
               <Info size={20} />
