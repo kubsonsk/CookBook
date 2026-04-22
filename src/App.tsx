@@ -161,12 +161,18 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('theme', theme);
     const root = document.documentElement;
+    const metaThemeColors = document.querySelectorAll('meta[name="theme-color"]');
+    
     if (theme === 'dark') {
       root.classList.add('dark');
-      console.log('DOM: Added .dark class', root.classList.toString());
+      metaThemeColors.forEach(meta => {
+        meta.setAttribute('content', '#09090b');
+      });
     } else {
       root.classList.remove('dark');
-      console.log('DOM: Removed .dark class', root.classList.toString());
+      metaThemeColors.forEach(meta => {
+        meta.setAttribute('content', '#f97316');
+      });
     }
   }, [theme]);
 
