@@ -18,3 +18,8 @@
     scrollbar-width: none;
   }
 }
+
+body {
+    background-color: #121212; /* Or your specific dark mode hex */
+}
+
