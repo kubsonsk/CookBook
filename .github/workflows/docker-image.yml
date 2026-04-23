@@ -2,8 +2,9 @@ name: Build and Deploy to Cloud Run
 
 on:
   push:
-    branches:
-      - main  # Adjust this if your branch is named differently
+    # branches:
+    #   - main  # Adjust this if your branch is named differently
+    tags: 1.*
 
 jobs:
   deploy:
