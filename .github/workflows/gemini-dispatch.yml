@@ -12,7 +12,7 @@ on:
       - 'opened'
   issues:
     types:
-      - 'opened'
+ #    - 'opened'
       - 'reopened'
   issue_comment:
     types:
