@@ -81,15 +81,6 @@ function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 pb-20 font-sans transition-colors duration-300">
-      <header className="sticky top-0 z-40 w-full bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border-b border-slate-200 dark:border-zinc-800 px-4 py-3">
-        <div className="flex items-center justify-between max-w-2xl mx-auto">
-          <div className="flex items-center gap-2">
-            <ChefHat className="text-orange-500" size={24} />
-            <h1 className="text-xl font-bold tracking-tight uppercase tracking-tighter">CookBook</h1>
-          </div>
-        </div>
-      </header>
-
       <main className="flex-1 w-full max-w-2xl mx-auto px-4 py-6">
         <AnimatePresence mode="wait">
           <motion.div
