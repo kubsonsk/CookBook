@@ -37,12 +37,24 @@
         "updatedAt": { "type": "string", "format": "date-time" }
       },
       "required": ["title", "ownerId", "ingredients", "steps"]
+    },
+    "UserSettings": {
+      "title": "User Settings",
+      "description": "User-specific settings and preferences.",
+      "type": "object",
+      "properties": {
+        "customTags": { "type": "array", "items": { "type": "string" } }
+      }
     }
   },
   "firestore": {
     "/recipes/{recipeId}": {
       "schema": "Recipe",
       "description": "Collection of user recipes."
+    },
+    "/user_settings/{userId}": {
+      "schema": "UserSettings",
+      "description": "User-specific settings and preferences."
     }
   }
 }

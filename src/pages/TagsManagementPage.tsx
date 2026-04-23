@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { collection, query, where, getDocs, writeBatch, doc } from 'firebase/firestore';
+import { collection, query, where, getDocs, writeBatch, doc, getDoc, setDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { Recipe, DEFAULT_TAGS } from '../types';
 import { ArrowLeft, Tag, Edit2, Trash2, Plus, Loader2, Save, X } from 'lucide-react';
@@ -19,13 +19,27 @@ export default function TagsManagementPage() {
     if (!auth.currentUser) return;
     setLoading(true);
     try {
+      const uniqueTags = new Set<string>(DEFAULT_TAGS);
+
+      // 1. Fetch tags from recipes
       const q = query(collection(db, 'recipes'), where('ownerId', '==', auth.currentUser.uid));
       const querySnapshot = await getDocs(q);
-      const uniqueTags = new Set<string>(DEFAULT_TAGS);
       querySnapshot.forEach((doc) => {
         const data = doc.data() as Recipe;
         (data.tags || []).forEach(tag => uniqueTags.add(tag));
       });
+
+      // 2. Fetch custom tags from user settings
+      try {
+        const settingsDoc = await getDoc(doc(db, 'user_settings', auth.currentUser.uid));
+        if (settingsDoc.exists()) {
+          const customTags = settingsDoc.data().customTags || [];
+          customTags.forEach((tag: string) => uniqueTags.add(tag));
+        }
+      } catch (err) {
+        console.error("Error fetching custom tags:", err);
+      }
+
       setTags(Array.from(uniqueTags).sort());
     } catch (error) {
       console.error("Error fetching tags:", error);
@@ -35,30 +49,52 @@ export default function TagsManagementPage() {
   };
 
   useEffect(() => {
-    fetchTags();
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        fetchTags();
+      } else {
+        setLoading(false);
+        setTags(DEFAULT_TAGS);
+      }
+    });
+    return () => unsubscribe();
   }, []);
 
   const handleRename = async (oldTag: string) => {
-    if (!newTagName.trim() || newTagName === oldTag) {
+    if (!newTagName.trim() || newTagName === oldTag || !auth.currentUser) {
       setEditingTag(null);
       return;
     }
 
+    const newTag = newTagName.trim();
     setProcessing(true);
     try {
+      const batch = writeBatch(db);
+
+      // 1. Update recipes
       const q = query(
         collection(db, 'recipes'), 
-        where('ownerId', '==', auth.currentUser?.uid),
+        where('ownerId', '==', auth.currentUser.uid),
         where('tags', 'array-contains', oldTag)
       );
       const querySnapshot = await getDocs(q);
-      const batch = writeBatch(db);
 
       querySnapshot.forEach((recipeDoc) => {
         const data = recipeDoc.data() as Recipe;
-        const updatedTags = data.tags.map(t => t === oldTag ? newTagName.trim() : t);
+        const updatedTags = data.tags.map(t => t === oldTag ? newTag : t);
         batch.update(doc(db, 'recipes', recipeDoc.id), { tags: updatedTags });
       });
+
+      // 2. Update user settings
+      const settingsRef = doc(db, 'user_settings', auth.currentUser.uid);
+      const settingsSnap = await getDoc(settingsRef);
+      if (settingsSnap.exists()) {
+        const customTags = settingsSnap.data().customTags || [];
+        if (customTags.includes(oldTag)) {
+          const updatedCustomTags = customTags.map((t: string) => t === oldTag ? newTag : t);
+          batch.update(settingsRef, { customTags: updatedCustomTags });
+        }
+      }
 
       await batch.commit();
       setEditingTag(null);
@@ -73,23 +109,35 @@ export default function TagsManagementPage() {
   };
 
   const handleDelete = async (tagToDelete: string) => {
-    if (!window.confirm(`Are you sure you want to delete the tag "${tagToDelete}" from all recipes?`)) return;
+    if (!auth.currentUser) return;
+    if (!window.confirm(`Are you sure you want to delete the tag "${tagToDelete}" from all recipes and your saved tags?`)) return;
 
     setProcessing(true);
     try {
+      const batch = writeBatch(db);
+
+      // 1. Remove from recipes
       const q = query(
         collection(db, 'recipes'), 
-        where('ownerId', '==', auth.currentUser?.uid),
+        where('ownerId', '==', auth.currentUser.uid),
         where('tags', 'array-contains', tagToDelete)
       );
       const querySnapshot = await getDocs(q);
-      const batch = writeBatch(db);
 
       querySnapshot.forEach((recipeDoc) => {
         const data = recipeDoc.data() as Recipe;
         const updatedTags = data.tags.filter(t => t !== tagToDelete);
         batch.update(doc(db, 'recipes', recipeDoc.id), { tags: updatedTags });
       });
+
+      // 2. Remove from user settings
+      const settingsRef = doc(db, 'user_settings', auth.currentUser.uid);
+      const settingsSnap = await getDoc(settingsRef);
+      if (settingsSnap.exists()) {
+        batch.update(settingsRef, {
+          customTags: arrayRemove(tagToDelete)
+        });
+      }
 
       await batch.commit();
       await fetchTags();
@@ -101,14 +149,33 @@ export default function TagsManagementPage() {
     }
   };
 
-  const handleAdd = () => {
-    if (!newTagName.trim()) return;
+  const handleAdd = async () => {
+    if (!newTagName.trim() || !auth.currentUser) return;
     const tag = newTagName.trim();
-    if (!tags.includes(tag)) {
-      setTags(prev => [...prev, tag].sort());
+    
+    if (tags.includes(tag)) {
+      alert("This tag already exists.");
+      return;
     }
-    setNewTagName('');
-    setIsAdding(false);
+
+    setProcessing(true);
+    try {
+      const settingsRef = doc(db, 'user_settings', auth.currentUser.uid);
+      
+      await setDoc(settingsRef, {
+        customTags: arrayUnion(tag)
+      }, { merge: true });
+      
+      // Update local state and UI immediately
+      setTags(prev => [...prev, tag].sort());
+      setNewTagName('');
+      setIsAdding(false);
+    } catch (error) {
+      console.error("Error adding tag:", error);
+      alert("Failed to add tag. " + (error instanceof Error ? error.message : "Permission denied. Check Firestore rules."));
+    } finally {
+      setProcessing(false);
+    }
   };
 
   return (
@@ -163,18 +230,22 @@ export default function TagsManagementPage() {
                       )}
                     </div>
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button 
-                        onClick={() => { setEditingTag(tag); setNewTagName(tag); }}
-                        className="p-2 text-slate-400 hover:text-orange-500"
-                      >
-                        <Edit2 size={16} />
-                      </button>
-                      <button 
-                        onClick={() => handleDelete(tag)}
-                        className="p-2 text-slate-400 hover:text-red-500"
-                      >
-                        <Trash2 size={16} />
-                      </button>
+                      {!DEFAULT_TAGS.includes(tag) && (
+                        <>
+                          <button 
+                            onClick={() => { setEditingTag(tag); setNewTagName(tag); }}
+                            className="p-2 text-slate-400 hover:text-orange-500"
+                          >
+                            <Edit2 size={16} />
+                          </button>
+                          <button 
+                            onClick={() => handleDelete(tag)}
+                            className="p-2 text-slate-400 hover:text-red-500"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </>
+                      )}
                     </div>
                   </>
                 )}
@@ -194,9 +265,10 @@ export default function TagsManagementPage() {
                 />
                 <button 
                   onClick={handleAdd}
-                  className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm font-bold"
+                  disabled={processing}
+                  className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm font-bold disabled:opacity-50"
                 >
-                  Add
+                  {processing ? <Loader2 className="animate-spin" size={18} /> : 'Add'}
                 </button>
                 <button 
                   onClick={() => { setIsAdding(false); setNewTagName(''); }}

@@ -1,11 +1,6 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Default deny
-    match /{document=**} {
-      allow read, write: if false;
-    }
-
     function isSignedIn() {
       return request.auth != null;
     }
@@ -18,6 +13,12 @@ service cloud.firestore {
       return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
     }
 
+    // User Settings Collection
+    match /user_settings/{userId} {
+      allow get, list, create, update, delete: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Recipes Collection
     match /recipes/{recipeId} {
       function isValidRecipe(data) {
         return data.title is string && data.title.size() <= 200 &&
@@ -40,6 +41,11 @@ service cloud.firestore {
                       request.resource.data.createdAt == resource.data.createdAt;
                       
       allow delete: if isSignedIn() && isOwner(resource.data.ownerId);
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
