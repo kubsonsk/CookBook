@@ -238,26 +238,26 @@ export default function RecipeFormPage() {
       </div>
 
       {!isEdit && (
-        <div className="bg-orange-50 dark:bg-orange-950/20 p-5 rounded-3xl border border-orange-100 dark:border-orange-900/30 space-y-3">
-          <div className="flex items-center gap-2 text-orange-600 dark:text-orange-400">
+        <div className="bg-primary-50 dark:bg-primary-950/20 p-5 rounded-3xl border border-primary-100 dark:border-primary-900/30 space-y-3">
+          <div className="flex items-center gap-2 text-primary-600 dark:text-primary-400">
             <Sparkles size={20} />
             <span className="font-bold uppercase tracking-tight text-sm">Magic Import</span>
           </div>
-          <p className="text-xs text-orange-800/70 dark:text-orange-300 text-pretty">
+          <p className="text-xs text-primary-800/70 dark:text-primary-300 text-pretty">
             Paste a recipe URL and let AI do the work for you.
           </p>
           <div className="flex gap-2">
             <input
               type="url"
               placeholder="https://recipe-website.com/..."
-              className="flex-1 px-4 py-3 rounded-xl bg-white dark:bg-zinc-900 border border-orange-200 dark:border-orange-900/50 text-sm focus:outline-none"
+              className="flex-1 px-4 py-3 rounded-xl bg-white dark:bg-zinc-900 border border-primary-200 dark:border-primary-900/50 text-sm focus:outline-none"
               value={magicUrl}
               onChange={(e) => setMagicUrl(e.target.value)}
             />
             <button
               disabled={magicLoading}
               onClick={handleMagicAdd}
-              className="px-4 py-3 bg-orange-500 text-white rounded-xl disabled:opacity-50"
+              className="px-4 py-3 bg-primary-500 text-white rounded-xl disabled:opacity-50"
             >
               {magicLoading ? <Loader2 className="animate-spin" size={20} /> : <Plus size={20} />}
             </button>
@@ -273,7 +273,7 @@ export default function RecipeFormPage() {
               type="text"
               required
               placeholder="e.g. Grandma's Apple Pie"
-              className="w-full px-4 py-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 focus:ring-2 focus:ring-orange-500/20 font-bold text-lg"
+              className="w-full px-4 py-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 focus:ring-2 focus:ring-primary-500/20 font-bold text-lg"
               value={recipe.title}
               onChange={(e) => setRecipe({ ...recipe, title: e.target.value })}
             />
@@ -340,7 +340,7 @@ export default function RecipeFormPage() {
                   className={cn(
                     "px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all border flex items-center gap-2",
                     recipe.labels?.includes(label.name)
-                      ? "bg-orange-500 text-white border-orange-500"
+                      ? "bg-primary-500 text-white border-primary-500"
                       : "bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 text-slate-500"
                   )}
                 >
@@ -355,7 +355,7 @@ export default function RecipeFormPage() {
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="font-black uppercase tracking-tight text-lg">Ingredients</h3>
-            <button type="button" onClick={addIngredient} className="text-orange-500 p-2"><Plus size={24} /></button>
+            <button type="button" onClick={addIngredient} className="text-primary-500 p-2"><Plus size={24} /></button>
           </div>
           <div className="space-y-3">
             {recipe.ingredients?.map((ing, i) => (
@@ -397,14 +397,14 @@ export default function RecipeFormPage() {
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="font-black uppercase tracking-tight text-lg">Steps</h3>
-            <button type="button" onClick={addStep} className="text-orange-500 p-2"><Plus size={24} /></button>
+            <button type="button" onClick={addStep} className="text-primary-500 p-2"><Plus size={24} /></button>
           </div>
           <div className="space-y-4">
             {recipe.steps?.map((step, i) => (
               <div key={i} className="p-4 bg-white dark:bg-zinc-950 rounded-2xl border border-slate-200 dark:border-zinc-800 space-y-3 relative">
                 <button type="button" onClick={() => removeStep(i)} className="absolute top-2 right-2 text-slate-300"><X size={20} /></button>
                 <div className="flex gap-4">
-                   <div className="w-8 h-8 rounded-lg bg-orange-100 dark:bg-orange-950 text-orange-500 flex items-center justify-center font-bold">{i+1}</div>
+                   <div className="w-8 h-8 rounded-lg bg-primary-100 dark:bg-primary-950 text-primary-500 flex items-center justify-center font-bold">{i+1}</div>
                    <textarea
                     placeholder="Describe this step..."
                     className="flex-1 bg-transparent border-0 focus:ring-0 text-sm min-h-[80px]"
@@ -430,7 +430,7 @@ export default function RecipeFormPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-4 bg-orange-500 text-white rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-orange-500/20 active:scale-95 transition-all flex items-center justify-center gap-2"
+          className="w-full py-4 bg-primary-500 text-white rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-primary-500/20 active:scale-95 transition-all flex items-center justify-center gap-2"
         >
           {loading ? <Loader2 className="animate-spin" size={24} /> : <Save size={24} />}
           {isEdit ? 'Update Recipe' : 'Save Recipe'}
@@ -465,7 +465,7 @@ export default function RecipeFormPage() {
                 </button>
                 <button
                   onClick={() => handleResolveConflict(false)}
-                  className="w-full py-3 bg-orange-500 text-white rounded-xl font-bold text-sm"
+                  className="w-full py-3 bg-primary-500 text-white rounded-xl font-bold text-sm"
                 >
                   Overwrite with My Changes
                 </button>
