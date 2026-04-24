@@ -18,6 +18,16 @@ service cloud.firestore {
       allow get, list, create, update, delete: if isSignedIn() && request.auth.uid == userId;
     }
 
+    // Labels Collection
+    match /labels/{labelId} {
+      allow get, list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow create: if isSignedIn() && request.resource.data.ownerId == request.auth.uid &&
+                      request.resource.data.name is string &&
+                      request.resource.data.name.size() > 0 &&
+                      request.resource.data.createdAt == request.time;
+      allow delete: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+    }
+
     // Recipes Collection
     match /recipes/{recipeId} {
       function isValidRecipe(data) {

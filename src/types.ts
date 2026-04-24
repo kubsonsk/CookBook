@@ -9,6 +9,13 @@ export interface Step {
   imageUrl?: string;
 }
 
+export interface Label {
+  id?: string;
+  name: string;
+  ownerId: string;
+  createdAt?: any;
+}
+
 export interface Recipe {
   id?: string;
   title: string;
@@ -16,6 +23,7 @@ export interface Recipe {
   videoUrl?: string;
   servings: number;
   prepTime?: number;
+  labels: string[];
   ingredients: Ingredient[];
   steps: Step[];
   ownerId: string;

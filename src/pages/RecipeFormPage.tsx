@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { doc, getDoc, addDoc, updateDoc, collection, serverTimestamp, query, where, getDocs, getDocFromServer } from 'firebase/firestore';
+import { doc, getDoc, addDoc, updateDoc, collection, serverTimestamp, query, where, onSnapshot, orderBy, getDocFromServer } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
-import { Recipe, Ingredient, Step } from '../types';
+import { Recipe, Ingredient, Step, Label } from '../types';
 import { 
   ArrowLeft, Plus, Trash2, Image as ImageIcon, Video, 
-  Sparkles, Loader2, Save, X, AlertTriangle
+  Sparkles, Loader2, Save, X, AlertTriangle, Tag
 } from 'lucide-react';
 import { extractRecipeFromUrl } from '../lib/gemini';
 import { cn } from '../lib/utils';
@@ -26,15 +26,36 @@ export default function RecipeFormPage() {
   const [showConflictModal, setShowConflictModal] = useState(false);
   const [serverVersion, setServerVersion] = useState<Recipe | null>(null);
 
+  const [availableLabels, setAvailableLabels] = useState<Label[]>([]);
+
   const [recipe, setRecipe] = useState<Partial<Recipe>>({
     title: '',
     servings: 2,
     prepTime: 30,
+    labels: [],
     ingredients: [{ name: '', amount: 0, unit: 'g' }],
     steps: [{ text: '' }],
   });
   
   const [originalUpdatedAt, setOriginalUpdatedAt] = useState<any>(null);
+
+  useEffect(() => {
+    if (!auth.currentUser) return;
+
+    const q = query(
+      collection(db, 'labels'),
+      where('ownerId', '==', auth.currentUser.uid)
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Label));
+      // Sort in-memory alphabetically by name for selection
+      data.sort((a, b) => a.name.localeCompare(b.name));
+      setAvailableLabels(data);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     if (isEdit) {
@@ -60,6 +81,7 @@ export default function RecipeFormPage() {
         setRecipe(prev => ({
           ...prev,
           ...data,
+          labels: prev.labels || [],
           ingredients: data.ingredients || [{ name: '', amount: 0, unit: 'g' }],
           steps: data.steps || [{ text: '' }],
         }));
@@ -153,6 +175,15 @@ export default function RecipeFormPage() {
         updatedAt: serverTimestamp(),
       };
       await performSave(recipeData);
+    }
+  };
+
+  const toggleLabel = (labelName: string) => {
+    const curLabels = recipe.labels || [];
+    if (curLabels.includes(labelName)) {
+      setRecipe({ ...recipe, labels: curLabels.filter(l => l !== labelName) });
+    } else {
+      setRecipe({ ...recipe, labels: [...curLabels, labelName] });
     }
   };
 
@@ -296,6 +327,30 @@ export default function RecipeFormPage() {
             </div>
           </label>
         </section>
+
+        {availableLabels.length > 0 && (
+          <section className="space-y-3">
+            <span className="text-xs font-bold uppercase tracking-widest text-slate-400 block">Labels</span>
+            <div className="flex flex-wrap gap-2">
+              {availableLabels.map(label => (
+                <button
+                  key={label.id}
+                  type="button"
+                  onClick={() => toggleLabel(label.name)}
+                  className={cn(
+                    "px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all border flex items-center gap-2",
+                    recipe.labels?.includes(label.name)
+                      ? "bg-orange-500 text-white border-orange-500"
+                      : "bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 text-slate-500"
+                  )}
+                >
+                  <Tag size={12} />
+                  {label.name}
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
 
         <section className="space-y-4">
           <div className="flex items-center justify-between">

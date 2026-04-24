@@ -7,6 +7,7 @@ import HomePage from './pages/HomePage';
 import RecipeDetailPage from './pages/RecipeDetailPage';
 import RecipeFormPage from './pages/RecipeFormPage';
 import SettingsPage from './pages/SettingsPage';
+import LabelManagementPage from './pages/LabelManagementPage';
 
 import { auth } from './lib/firebase';
 import { onAuthStateChanged, User, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
@@ -231,6 +232,7 @@ export default function App() {
             <Route path="/add" element={<RecipeFormPage />} />
             <Route path="/edit/:id" element={<RecipeFormPage />} />
             <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/settings/labels" element={<LabelManagementPage />} />
 
           </Routes>
         </Layout>
