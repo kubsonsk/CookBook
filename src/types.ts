@@ -16,12 +16,9 @@ export interface Recipe {
   videoUrl?: string;
   servings: number;
   prepTime?: number;
-  tags: string[];
   ingredients: Ingredient[];
   steps: Step[];
   ownerId: string;
   createdAt?: any;
   updatedAt?: any;
 }
-
-export const DEFAULT_TAGS = ['Breakfast', 'Lunch', 'Dinner', 'Snack', 'Dessert', 'Appetizer', 'Side', 'Drink'];

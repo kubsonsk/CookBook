@@ -37,13 +37,6 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, index }) => (
           <h3 className="font-bold text-lg leading-tight line-clamp-1 group-hover:text-orange-500 transition-colors uppercase tracking-tight">
             {recipe.title}
           </h3>
-          <div className="flex gap-1 mt-1 flex-wrap">
-            {recipe.tags?.slice(0, 2).map(t => (
-              <span key={t} className="text-[10px] bg-slate-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded uppercase tracking-wider text-slate-500">
-                {t}
-              </span>
-            ))}
-          </div>
         </div>
         <div className="flex items-center gap-4 text-xs text-slate-400 dark:text-zinc-500 mt-3"> {/* Added mt-3 for spacing */}
           <div className="flex items-center gap-1">

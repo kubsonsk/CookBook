@@ -10,7 +10,6 @@
         "videoUrl": { "type": "string" },
         "servings": { "type": "number" },
         "prepTime": { "type": "number", "description": "Prep time in minutes" },
-        "tags": { "type": "array", "items": { "type": "string" } },
         "ingredients": {
           "type": "array",
           "items": {
@@ -42,9 +41,7 @@
       "title": "User Settings",
       "description": "User-specific settings and preferences.",
       "type": "object",
-      "properties": {
-        "customTags": { "type": "array", "items": { "type": "string" } }
-      }
+      "properties": {}
     }
   },
   "firestore": {

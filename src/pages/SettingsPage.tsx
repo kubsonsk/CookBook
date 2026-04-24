@@ -2,9 +2,8 @@ import React from 'react';
 import { useTheme } from '../App';
 import { signOut } from 'firebase/auth';
 import { auth } from '../lib/firebase';
-import { Moon, Sun, LogOut, ChevronRight, User, Shield, Info, Tag } from 'lucide-react';
+import { Moon, Sun, LogOut, ChevronRight, User, Info } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
 
 export default function SettingsPage() {
   const { theme, toggleTheme } = useTheme();
@@ -72,22 +71,6 @@ export default function SettingsPage() {
                />
             </div>
           </button>
-        </div>
-      </section>
-
-      <section className="space-y-4">
-        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-zinc-500 ml-4">Content</h3>
-        <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-slate-100 dark:border-zinc-800 overflow-hidden shadow-sm">
-          <Link 
-            to="/settings/tags"
-            className="w-full flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-zinc-800/50 transition-colors group"
-          >
-            <div className="flex items-center gap-3">
-              <Tag size={20} className="text-orange-500" />
-              <span className="font-bold">Manage Tags</span>
-            </div>
-            <ChevronRight size={18} className="text-slate-300 group-hover:translate-x-1 transition-transform" />
-          </Link>
         </div>
       </section>
 
