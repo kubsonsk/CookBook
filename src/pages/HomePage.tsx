@@ -3,14 +3,16 @@ import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestor
 import { db, auth } from '../lib/firebase';
 import { Recipe, DEFAULT_TAGS } from '../types';
 import { Link } from 'react-router-dom';
-import { Clock, Star, Plus, ChefHat, LayoutGrid, List, Filter } from 'lucide-react'; // Removed Search icon import
+import { Clock, Star, Plus, ChefHat, LayoutGrid, List, Filter, Loader2 } from 'lucide-react'; // Removed Search icon import
 import { motion } from 'framer-motion';
 import { cn, formatTime, getLocalStorageItem, setLocalStorageItem } from '../lib/utils';
 import { RecipeCard } from '../components/RecipeCard';
 import { RecipeListItem } from '../components/RecipeListItem';
 import { FilterModal } from '../components/FilterModal';
+import { useOnlineStatus } from '../lib/hooks';
 
 export default function HomePage() {
+  const isOnline = useOnlineStatus();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -19,6 +21,8 @@ export default function HomePage() {
     (getLocalStorageItem('recipeViewMode') as 'card' | 'list') || 'card'
   );
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+
+  const [isSyncing, setIsSyncing] = useState(false);
 
   useEffect(() => {
     if (!auth.currentUser) return;
@@ -33,6 +37,7 @@ export default function HomePage() {
       const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Recipe));
       setRecipes(data);
       setLoading(false);
+      setIsSyncing(snapshot.metadata.hasPendingWrites);
     });
 
     return () => unsubscribe();
@@ -76,11 +81,18 @@ export default function HomePage() {
       <div className="space-y-4">
         {/* Removed the search bar div entirely */}
 
-        {/* View Toggle - positioned below search bar, above recipe list */}
         <div className="flex justify-between items-center mt-4">
-          <h2 className="text-xl font-bold uppercase tracking-tight text-slate-800 dark:text-zinc-100">
-            All Recipes
-          </h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-xl font-bold uppercase tracking-tight text-slate-800 dark:text-zinc-100">
+              All Recipes
+            </h2>
+            {isSyncing && isOnline && (
+              <div className="flex items-center gap-1.5 px-2 py-0.5 bg-orange-100 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 rounded-full animate-pulse">
+                <Loader2 size={10} className="animate-spin" />
+                <span className="text-[10px] font-bold uppercase tracking-widest">Syncing</span>
+              </div>
+            )}
+          </div>
           <div className="flex gap-2 p-1 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-full">
             <button
               onClick={() => setViewMode('card')}
