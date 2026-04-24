@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, NavLink, useLocation } from 'react-router-dom';
 import { LayoutGroup, motion, AnimatePresence } from 'framer-motion';
-import { Home as HomeIcon, PlusCircle, Settings, ChefHat, LogOut } from 'lucide-react';
+import { Home as HomeIcon, PlusCircle, Settings, ChefHat, LogOut, WifiOff } from 'lucide-react';
 import { cn } from './lib/utils';
 import HomePage from './pages/HomePage';
 import RecipeDetailPage from './pages/RecipeDetailPage';
@@ -11,6 +11,7 @@ import TagsManagementPage from './pages/TagsManagementPage';
 
 import { auth } from './lib/firebase';
 import { onAuthStateChanged, User, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
+import { useOnlineStatus } from './lib/hooks';
 
 const ThemeContext = createContext<{ theme: 'light' | 'dark', toggleTheme: () => void }>({ theme: 'light', toggleTheme: () => {} });
 
@@ -70,6 +71,28 @@ function LoginPage() {
   );
 }
 
+function OfflineBanner() {
+  const isOnline = useOnlineStatus();
+  
+  return (
+    <AnimatePresence>
+      {!isOnline && (
+        <motion.div
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: 'auto', opacity: 1 }}
+          exit={{ height: 0, opacity: 0 }}
+          className="bg-zinc-900 text-white overflow-hidden"
+        >
+          <div className="flex items-center justify-center gap-2 py-2 px-4 text-xs font-bold uppercase tracking-widest">
+            <WifiOff size={14} />
+            Offline Mode Active
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
 function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
 
@@ -81,6 +104,7 @@ function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 pb-20 font-sans transition-colors duration-300">
+      <OfflineBanner />
       <main className="flex-1 w-full max-w-2xl mx-auto px-4 py-6">
         <AnimatePresence mode="wait">
           <motion.div

@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { doc, getDoc, addDoc, updateDoc, collection, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
+import { doc, getDoc, addDoc, updateDoc, collection, serverTimestamp, query, where, getDocs, getDocFromServer } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { Recipe, Ingredient, Step, DEFAULT_TAGS } from '../types';
 import { 
   ArrowLeft, Plus, Trash2, Image as ImageIcon, Video, 
-  Sparkles, Loader2, Save, X
+  Sparkles, Loader2, Save, X, AlertTriangle
 } from 'lucide-react';
 import { extractRecipeFromUrl } from '../lib/gemini';
 import { cn } from '../lib/utils';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function RecipeFormPage() {
   const { id } = useParams();
@@ -24,6 +24,9 @@ export default function RecipeFormPage() {
   const [magicUrl, setMagicUrl] = useState(sharedUrl);
   const [newTag, setNewTag] = useState('');
   const [availableTags, setAvailableTags] = useState<string[]>(DEFAULT_TAGS);
+  
+  const [showConflictModal, setShowConflictModal] = useState(false);
+  const [serverVersion, setServerVersion] = useState<Recipe | null>(null);
 
   const [recipe, setRecipe] = useState<Partial<Recipe>>({
     title: '',
@@ -33,6 +36,8 @@ export default function RecipeFormPage() {
     ingredients: [{ name: '', amount: 0, unit: 'g' }],
     steps: [{ text: '' }],
   });
+  
+  const [originalUpdatedAt, setOriginalUpdatedAt] = useState<any>(null);
 
   useEffect(() => {
     const fetchAvailableTags = async () => {
@@ -55,7 +60,9 @@ export default function RecipeFormPage() {
         const docRef = doc(db, 'recipes', id);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
-          setRecipe(docSnap.data() as Recipe);
+          const data = docSnap.data() as Recipe;
+          setRecipe(data);
+          setOriginalUpdatedAt(data.updatedAt);
         }
       };
       fetchRecipe();
@@ -84,8 +91,28 @@ export default function RecipeFormPage() {
     }
   };
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const performSave = async (data: any) => {
+    try {
+      if (isEdit) {
+        await updateDoc(doc(db, 'recipes', id), data);
+      } else {
+        await addDoc(collection(db, 'recipes'), {
+          ...data,
+          createdAt: serverTimestamp(),
+        });
+      }
+      navigate('/');
+    } catch (err) {
+      console.error(err);
+      alert('Failed to save recipe. It will be synced when you are back online.');
+      navigate('/'); // Still navigate away as Firestore handles offline queue
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSave = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     if (!recipe.title || !auth.currentUser) return;
 
     setLoading(true);
@@ -95,20 +122,42 @@ export default function RecipeFormPage() {
       updatedAt: serverTimestamp(),
     };
 
-    try {
-      if (isEdit) {
-        await updateDoc(doc(db, 'recipes', id), recipeData);
-      } else {
-        await addDoc(collection(db, 'recipes'), {
-          ...recipeData,
-          createdAt: serverTimestamp(),
-        });
+    if (isEdit && navigator.onLine) {
+      try {
+        const docRef = doc(db, 'recipes', id);
+        const serverSnap = await getDocFromServer(docRef);
+        if (serverSnap.exists()) {
+          const serverData = serverSnap.data() as Recipe;
+          // Compare updatedAt. If server has a newer version than what we started with
+          if (originalUpdatedAt && serverData.updatedAt && serverData.updatedAt.toMillis() > originalUpdatedAt.toMillis()) {
+            setServerVersion(serverData);
+            setShowConflictModal(true);
+            setLoading(false);
+            return;
+          }
+        }
+      } catch (err) {
+        console.warn('Could not check server version, proceeding with save', err);
       }
-      navigate('/');
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
+    }
+
+    await performSave(recipeData);
+  };
+
+  const handleResolveConflict = async (useServer: boolean) => {
+    setShowConflictModal(false);
+    if (useServer && serverVersion) {
+      setRecipe(serverVersion);
+      setOriginalUpdatedAt(serverVersion.updatedAt);
+    } else {
+      // Use local version (overwrite server)
+      setLoading(true);
+      const recipeData = {
+        ...recipe,
+        ownerId: auth.currentUser?.uid,
+        updatedAt: serverTimestamp(),
+      };
+      await performSave(recipeData);
     }
   };
 
@@ -394,6 +443,44 @@ export default function RecipeFormPage() {
           {isEdit ? 'Update Recipe' : 'Save Recipe'}
         </button>
       </form>
+
+      <AnimatePresence>
+        {showConflictModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="bg-white dark:bg-zinc-900 rounded-3xl p-6 max-w-sm w-full shadow-2xl space-y-6"
+            >
+              <div className="flex flex-col items-center text-center space-y-3">
+                <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 text-red-500 rounded-full flex items-center justify-center">
+                  <AlertTriangle size={32} />
+                </div>
+                <h3 className="text-xl font-black uppercase tracking-tight">Sync Conflict</h3>
+                <p className="text-sm text-slate-500 dark:text-zinc-400">
+                  This recipe was updated on the server while you were editing it. Which version do you want to keep?
+                </p>
+              </div>
+
+              <div className="grid gap-3">
+                <button
+                  onClick={() => handleResolveConflict(true)}
+                  className="w-full py-3 bg-slate-100 dark:bg-zinc-800 rounded-xl font-bold text-sm"
+                >
+                  Use Server Version
+                </button>
+                <button
+                  onClick={() => handleResolveConflict(false)}
+                  className="w-full py-3 bg-orange-500 text-white rounded-xl font-bold text-sm"
+                >
+                  Overwrite with My Changes
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
