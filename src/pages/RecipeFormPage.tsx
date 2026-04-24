@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { doc, getDoc, addDoc, updateDoc, collection, serverTimestamp, query, where, getDocs, getDocFromServer } from 'firebase/firestore';
+import { doc, getDoc, addDoc, updateDoc, collection, serverTimestamp, query, where, onSnapshot, orderBy, getDocFromServer } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
-import { Recipe, Ingredient, Step, DEFAULT_TAGS } from '../types';
+import { Recipe, Ingredient, Step, Label } from '../types';
 import { 
   ArrowLeft, Plus, Trash2, Image as ImageIcon, Video, 
-  Sparkles, Loader2, Save, X, AlertTriangle
+  Sparkles, Loader2, Save, X, AlertTriangle, Tag
 } from 'lucide-react';
 import { extractRecipeFromUrl } from '../lib/gemini';
 import { cn } from '../lib/utils';
@@ -22,17 +22,17 @@ export default function RecipeFormPage() {
   const [loading, setLoading] = useState(false);
   const [magicLoading, setMagicLoading] = useState(false);
   const [magicUrl, setMagicUrl] = useState(sharedUrl);
-  const [newTag, setNewTag] = useState('');
-  const [availableTags, setAvailableTags] = useState<string[]>(DEFAULT_TAGS);
   
   const [showConflictModal, setShowConflictModal] = useState(false);
   const [serverVersion, setServerVersion] = useState<Recipe | null>(null);
+
+  const [availableLabels, setAvailableLabels] = useState<Label[]>([]);
 
   const [recipe, setRecipe] = useState<Partial<Recipe>>({
     title: '',
     servings: 2,
     prepTime: 30,
-    tags: [],
+    labels: [],
     ingredients: [{ name: '', amount: 0, unit: 'g' }],
     steps: [{ text: '' }],
   });
@@ -40,18 +40,21 @@ export default function RecipeFormPage() {
   const [originalUpdatedAt, setOriginalUpdatedAt] = useState<any>(null);
 
   useEffect(() => {
-    const fetchAvailableTags = async () => {
-      if (!auth.currentUser) return;
-      const q = query(collection(db, 'recipes'), where('ownerId', '==', auth.currentUser.uid));
-      const querySnapshot = await getDocs(q);
-      const tags = new Set<string>(DEFAULT_TAGS);
-      querySnapshot.forEach((doc) => {
-        const data = doc.data() as Recipe;
-        (data.tags || []).forEach(tag => tags.add(tag));
-      });
-      setAvailableTags(Array.from(tags).sort());
-    };
-    fetchAvailableTags();
+    if (!auth.currentUser) return;
+
+    const q = query(
+      collection(db, 'labels'),
+      where('ownerId', '==', auth.currentUser.uid)
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Label));
+      // Sort in-memory alphabetically by name for selection
+      data.sort((a, b) => a.name.localeCompare(b.name));
+      setAvailableLabels(data);
+    });
+
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {
@@ -78,7 +81,7 @@ export default function RecipeFormPage() {
         setRecipe(prev => ({
           ...prev,
           ...data,
-          tags: data.tags || [],
+          labels: prev.labels || [],
           ingredients: data.ingredients || [{ name: '', amount: 0, unit: 'g' }],
           steps: data.steps || [{ text: '' }],
         }));
@@ -175,6 +178,15 @@ export default function RecipeFormPage() {
     }
   };
 
+  const toggleLabel = (labelName: string) => {
+    const curLabels = recipe.labels || [];
+    if (curLabels.includes(labelName)) {
+      setRecipe({ ...recipe, labels: curLabels.filter(l => l !== labelName) });
+    } else {
+      setRecipe({ ...recipe, labels: [...curLabels, labelName] });
+    }
+  };
+
   const addIngredient = () => {
     setRecipe(prev => ({
       ...prev,
@@ -213,25 +225,6 @@ export default function RecipeFormPage() {
       ...prev,
       steps: prev.steps?.filter((_, i) => i !== index)
     }));
-  };
-
-  const toggleTag = (tag: string) => {
-    const curTags = recipe.tags || [];
-    if (curTags.includes(tag)) {
-      setRecipe({ ...recipe, tags: curTags.filter(t => t !== tag) });
-    } else {
-      setRecipe({ ...recipe, tags: [...curTags, tag] });
-    }
-  };
-
-  const addCustomTag = () => {
-    if (!newTag.trim()) return;
-    const tag = newTag.trim();
-    if (!availableTags.includes(tag)) {
-      setAvailableTags(prev => [...prev, tag].sort());
-    }
-    toggleTag(tag);
-    setNewTag('');
   };
 
   return (
@@ -335,43 +328,29 @@ export default function RecipeFormPage() {
           </label>
         </section>
 
-        <section className="space-y-3">
-          <span className="text-xs font-bold uppercase tracking-widest text-slate-400 block">Tags</span>
-          <div className="flex flex-wrap gap-2">
-            {availableTags.map(tag => (
-              <button
-                key={tag}
-                type="button"
-                onClick={() => toggleTag(tag)}
-                className={cn(
-                  "px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all border",
-                  recipe.tags?.includes(tag)
-                    ? "bg-orange-500 text-white border-orange-500"
-                    : "bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 text-slate-500"
-                )}
-              >
-                {tag}
-              </button>
-            ))}
-          </div>
-          <div className="flex gap-2 mt-2">
-            <input
-              type="text"
-              placeholder="Add custom tag..."
-              className="flex-1 px-4 py-2 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-sm"
-              value={newTag}
-              onChange={(e) => setNewTag(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCustomTag())}
-            />
-            <button
-              type="button"
-              onClick={addCustomTag}
-              className="px-4 py-2 bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 rounded-xl text-sm font-bold"
-            >
-              Add
-            </button>
-          </div>
-        </section>
+        {availableLabels.length > 0 && (
+          <section className="space-y-3">
+            <span className="text-xs font-bold uppercase tracking-widest text-slate-400 block">Labels</span>
+            <div className="flex flex-wrap gap-2">
+              {availableLabels.map(label => (
+                <button
+                  key={label.id}
+                  type="button"
+                  onClick={() => toggleLabel(label.name)}
+                  className={cn(
+                    "px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all border flex items-center gap-2",
+                    recipe.labels?.includes(label.name)
+                      ? "bg-orange-500 text-white border-orange-500"
+                      : "bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 text-slate-500"
+                  )}
+                >
+                  <Tag size={12} />
+                  {label.name}
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
 
         <section className="space-y-4">
           <div className="flex items-center justify-between">

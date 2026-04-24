@@ -5,7 +5,7 @@ import { db } from '../lib/firebase';
 import { Recipe } from '../types';
 import { 
   ArrowLeft, Clock, Users, Star, Edit, Trash2, 
-  Share2, Play, ChevronRight, CheckCircle2, ListChecks
+  Share2, Play, ChevronRight, CheckCircle2, ListChecks, Tag
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn, formatTime } from '../lib/utils';
@@ -129,13 +129,16 @@ export default function RecipeDetailPage() {
 
       <div>
         <h1 className="text-3xl font-black uppercase tracking-tighter leading-tight">{recipe.title}</h1>
-        <div className="flex flex-wrap gap-2 mt-2">
-          {recipe.tags?.map(t => (
-            <span key={t} className="px-3 py-1 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-full text-xs font-bold uppercase tracking-widest text-slate-600 dark:text-zinc-400">
-              {t}
-            </span>
-          ))}
-        </div>
+        {recipe.labels && recipe.labels.length > 0 && (
+          <div className="flex flex-wrap gap-2 mt-2">
+            {recipe.labels.map(l => (
+              <span key={l} className="px-3 py-1 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-full text-xs font-bold uppercase tracking-widest text-slate-600 dark:text-zinc-400 flex items-center gap-1.5">
+                <Tag size={10} className="text-orange-500" />
+                {l}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="flex justify-between items-center bg-white dark:bg-zinc-900 p-4 rounded-3xl border border-slate-100 dark:border-zinc-800 shadow-sm">

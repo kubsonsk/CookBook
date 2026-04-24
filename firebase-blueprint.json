@@ -10,7 +10,7 @@
         "videoUrl": { "type": "string" },
         "servings": { "type": "number" },
         "prepTime": { "type": "number", "description": "Prep time in minutes" },
-        "tags": { "type": "array", "items": { "type": "string" } },
+        "labels": { "type": "array", "items": { "type": "string" } },
         "ingredients": {
           "type": "array",
           "items": {
@@ -37,12 +37,37 @@
         "updatedAt": { "type": "string", "format": "date-time" }
       },
       "required": ["title", "ownerId", "ingredients", "steps"]
+    },
+    "Label": {
+      "title": "Label",
+      "description": "A user-defined label for categorizing recipes.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "ownerId"]
+    },
+    "UserSettings": {
+      "title": "User Settings",
+      "description": "User-specific settings and preferences.",
+      "type": "object",
+      "properties": {}
     }
   },
   "firestore": {
     "/recipes/{recipeId}": {
       "schema": "Recipe",
       "description": "Collection of user recipes."
+    },
+    "/labels/{labelId}": {
+      "schema": "Label",
+      "description": "Collection of user-defined labels."
+    },
+    "/user_settings/{userId}": {
+      "schema": "UserSettings",
+      "description": "User-specific settings and preferences."
     }
   }
 }

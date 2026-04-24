@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ChefHat, Clock } from 'lucide-react';
+import { ChefHat, Clock, Tag } from 'lucide-react';
 import { Recipe } from '../types';
 import { formatTime } from '../lib/utils';
 
@@ -37,13 +37,19 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, index }) => (
           <h3 className="font-bold text-lg leading-tight line-clamp-1 group-hover:text-orange-500 transition-colors uppercase tracking-tight">
             {recipe.title}
           </h3>
-          <div className="flex gap-1 mt-1 flex-wrap">
-            {recipe.tags?.slice(0, 2).map(t => (
-              <span key={t} className="text-[10px] bg-slate-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded uppercase tracking-wider text-slate-500">
-                {t}
-              </span>
-            ))}
-          </div>
+          {recipe.labels && recipe.labels.length > 0 && (
+            <div className="flex gap-1 mt-1 flex-wrap">
+              {recipe.labels.slice(0, 2).map(l => (
+                <span key={l} className="text-[10px] bg-slate-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded uppercase tracking-wider text-slate-500 flex items-center gap-1">
+                  <Tag size={8} className="text-orange-500" />
+                  {l}
+                </span>
+              ))}
+              {recipe.labels.length > 2 && (
+                <span className="text-[10px] text-slate-400">+{recipe.labels.length - 2}</span>
+              )}
+            </div>
+          )}
         </div>
         <div className="flex items-center gap-4 text-xs text-slate-400 dark:text-zinc-500 mt-3"> {/* Added mt-3 for spacing */}
           <div className="flex items-center gap-1">
