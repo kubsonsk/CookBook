@@ -9,8 +9,10 @@ import { cn, formatTime, getLocalStorageItem, setLocalStorageItem } from '../lib
 import { RecipeCard } from '../components/RecipeCard';
 import { RecipeListItem } from '../components/RecipeListItem';
 import { FilterModal } from '../components/FilterModal';
+import { useOnlineStatus } from '../lib/hooks';
 
 export default function HomePage() {
+  const isOnline = useOnlineStatus();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -84,7 +86,7 @@ export default function HomePage() {
             <h2 className="text-xl font-bold uppercase tracking-tight text-slate-800 dark:text-zinc-100">
               All Recipes
             </h2>
-            {isSyncing && (
+            {isSyncing && isOnline && (
               <div className="flex items-center gap-1.5 px-2 py-0.5 bg-orange-100 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 rounded-full animate-pulse">
                 <Loader2 size={10} className="animate-spin" />
                 <span className="text-[10px] font-bold uppercase tracking-widest">Syncing</span>

@@ -93,19 +93,33 @@ export default function RecipeFormPage() {
 
   const performSave = async (data: any) => {
     try {
-      if (isEdit) {
-        await updateDoc(doc(db, 'recipes', id), data);
+      const savePromise = isEdit 
+        ? updateDoc(doc(db, 'recipes', id), data)
+        : addDoc(collection(db, 'recipes'), {
+            ...data,
+            createdAt: serverTimestamp(),
+          });
+
+      if (!navigator.onLine) {
+        // If offline, don't let the UI hang. Firestore will queue this.
+        // We wait a tiny bit to allow local cache to update.
+        await Promise.race([
+          savePromise,
+          new Promise(resolve => setTimeout(resolve, 800))
+        ]);
+        navigate('/');
       } else {
-        await addDoc(collection(db, 'recipes'), {
-          ...data,
-          createdAt: serverTimestamp(),
-        });
+        await savePromise;
+        navigate('/');
       }
-      navigate('/');
     } catch (err) {
-      console.error(err);
-      alert('Failed to save recipe. It will be synced when you are back online.');
-      navigate('/'); // Still navigate away as Firestore handles offline queue
+      console.error('Save error:', err);
+      // Even on error, if we are offline, it might be a transient issue that Firestore handles
+      if (!navigator.onLine) {
+        navigate('/');
+      } else {
+        alert('Failed to save recipe. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
