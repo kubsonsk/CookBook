@@ -66,8 +66,8 @@ export default function RecipeDetailPage() {
     }
   };
 
-  if (loading) return <div className="h-64 flex items-center justify-center"><div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin" /></div>;
-  if (!recipe) return <div className="text-center py-20"><p>Recipe not found.</p><Link to="/" className="text-orange-500">Go Home</Link></div>;
+  if (loading) return <div className="h-64 flex items-center justify-center"><div className="w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full animate-spin" /></div>;
+  if (!recipe) return <div className="text-center py-20"><p>Recipe not found.</p><Link to="/" className="text-primary-500">Go Home</Link></div>;
 
   const scale = servings / (recipe.servings || 1);
 
@@ -96,7 +96,7 @@ export default function RecipeDetailPage() {
             referrerPolicy="no-referrer"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-orange-100 dark:bg-orange-950 text-orange-500">
+          <div className="w-full h-full flex items-center justify-center bg-primary-100 dark:bg-primary-950 text-primary-500">
             <ChefHat size={64} />
           </div>
         )}
@@ -133,7 +133,7 @@ export default function RecipeDetailPage() {
           <div className="flex flex-wrap gap-2 mt-2">
             {recipe.labels.map(l => (
               <span key={l} className="px-3 py-1 bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-full text-xs font-bold uppercase tracking-widest text-slate-600 dark:text-zinc-400 flex items-center gap-1.5">
-                <Tag size={10} className="text-orange-500" />
+                <Tag size={10} className="text-primary-500" />
                 {l}
               </span>
             ))}
@@ -143,13 +143,13 @@ export default function RecipeDetailPage() {
 
       <div className="flex justify-between items-center bg-white dark:bg-zinc-900 p-4 rounded-3xl border border-slate-100 dark:border-zinc-800 shadow-sm">
         <div className="text-center flex-1">
-          <Clock className="mx-auto text-orange-500 mb-1" size={20} />
+          <Clock className="mx-auto text-primary-500 mb-1" size={20} />
           <p className="text-[10px] text-slate-400 uppercase font-bold tracking-widest leading-none">Time</p>
           <p className="font-bold">{recipe.prepTime ? formatTime(recipe.prepTime) : '--'}</p>
         </div>
         <div className="w-px h-8 bg-slate-100 dark:bg-zinc-800" />
         <div className="text-center flex-1">
-          <Users className="mx-auto text-orange-500 mb-1" size={20} />
+          <Users className="mx-auto text-primary-500 mb-1" size={20} />
           <p className="text-[10px] text-slate-400 uppercase font-bold tracking-widest leading-none">Servings</p>
           <div className="flex items-center justify-center gap-2 mt-0.5">
             <button onClick={() => setServings(Math.max(1, servings - 1))} className="w-5 h-5 bg-slate-100 dark:bg-zinc-800 rounded-full flex items-center justify-center text-slate-600">-</button>
@@ -166,7 +166,7 @@ export default function RecipeDetailPage() {
           </h2>
           <button 
             onClick={shareToReminders}
-            className="flex items-center gap-1.5 text-xs font-bold text-orange-500 uppercase tracking-widest hover:opacity-80 transition-opacity"
+            className="flex items-center gap-1.5 text-xs font-bold text-primary-500 uppercase tracking-widest hover:opacity-80 transition-opacity"
           >
             <ListChecks size={16} />
             Send to Reminders
@@ -176,7 +176,7 @@ export default function RecipeDetailPage() {
           {recipe.ingredients.map((ing, i) => (
             <div key={i} className="flex items-center justify-between p-4 border-b border-slate-50 dark:border-zinc-800/50 last:border-0 hover:bg-slate-50/50 dark:hover:bg-zinc-800/30 transition-colors group">
               <span className="font-medium">{ing.name}</span>
-              <span className="font-bold text-orange-500 group-hover:scale-110 transition-transform">
+              <span className="font-bold text-primary-500 group-hover:scale-110 transition-transform">
                 {Math.round(ing.amount * scale * 100) / 100} <span className="text-[10px] uppercase font-bold ml-0.5">{ing.unit}</span>
               </span>
             </div>
@@ -197,7 +197,7 @@ export default function RecipeDetailPage() {
             >
               <div className="p-5 space-y-3">
                 <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 rounded-xl bg-orange-500 flex items-center justify-center text-white font-bold flex-shrink-0 shadow-lg shadow-orange-500/20">
+                  <div className="w-8 h-8 rounded-xl bg-primary-500 flex items-center justify-center text-white font-bold flex-shrink-0 shadow-lg shadow-primary-500/20">
                     {i + 1}
                   </div>
                   <p className="text-slate-700 dark:text-zinc-300 leading-relaxed font-medium pt-1">
@@ -230,7 +230,7 @@ export default function RecipeDetailPage() {
               colors: ['#f97316', '#fb923c', '#ffffff']
             });
           }}
-          className="w-full py-4 bg-orange-500 text-white rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-orange-500/20 active:scale-95 transition-all flex items-center justify-center gap-2"
+          className="w-full py-4 bg-primary-500 text-white rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-primary-500/20 active:scale-95 transition-all flex items-center justify-center gap-2"
         >
           <CheckCircle2 size={24} />
           I'm done cooking!

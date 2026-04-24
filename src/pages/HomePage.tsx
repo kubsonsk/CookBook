@@ -89,7 +89,7 @@ export default function HomePage() {
               All Recipes
             </h2>
             {isSyncing && isOnline && (
-              <div className="flex items-center gap-1.5 px-2 py-0.5 bg-orange-100 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 rounded-full animate-pulse">
+              <div className="flex items-center gap-1.5 px-2 py-0.5 bg-primary-100 dark:bg-primary-950/30 text-primary-600 dark:text-primary-400 rounded-full animate-pulse">
                 <Loader2 size={10} className="animate-spin" />
                 <span className="text-[10px] font-bold uppercase tracking-widest">Syncing</span>
               </div>
@@ -100,12 +100,12 @@ export default function HomePage() {
               onClick={() => setIsSearchVisible(!isSearchVisible)}
               className={cn(
                 "p-2 rounded-full transition-all relative",
-                isSearchVisible ? "bg-orange-100 text-orange-500" : "text-slate-400 hover:text-orange-500"
+                isSearchVisible ? "bg-primary-100 text-primary-500" : "text-slate-400 hover:text-primary-500"
               )}
             >
               <Search size={20} />
               {(searchTerm || selectedLabels.length > 0) && !isSearchVisible && (
-                <div className="absolute top-0 right-0 w-2 h-2 bg-orange-500 rounded-full border-2 border-slate-50 dark:border-zinc-950" />
+                <div className="absolute top-0 right-0 w-2 h-2 bg-primary-500 rounded-full border-2 border-slate-50 dark:border-zinc-950" />
               )}
             </button>
             <div className="flex gap-2 p-1 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-full">
@@ -114,8 +114,8 @@ export default function HomePage() {
                 className={cn(
                   "p-1.5 rounded-full transition-all",
                   viewMode === 'card'
-                    ? "bg-orange-500 text-white shadow-md shadow-orange-500/20"
-                    : "text-slate-400 hover:text-orange-500"
+                    ? "bg-primary-500 text-white shadow-md shadow-primary-500/20"
+                    : "text-slate-400 hover:text-primary-500"
                 )}
                 aria-label="Show as cards"
               >
@@ -126,8 +126,8 @@ export default function HomePage() {
                 className={cn(
                   "p-1.5 rounded-full transition-all",
                   viewMode === 'list'
-                    ? "bg-orange-500 text-white shadow-md shadow-orange-500/20"
-                    : "text-slate-400 hover:text-orange-500"
+                    ? "bg-primary-500 text-white shadow-md shadow-primary-500/20"
+                    : "text-slate-400 hover:text-primary-500"
                 )}
                 aria-label="Show as list"
               >
@@ -148,7 +148,7 @@ export default function HomePage() {
               <input
                 type="text"
                 placeholder="Search recipes or ingredients..."
-                className="w-full px-4 py-3 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 focus:ring-2 focus:ring-orange-500/20 outline-none font-bold"
+                className="w-full px-4 py-3 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 focus:ring-2 focus:ring-primary-500/20 outline-none font-bold"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 autoFocus
@@ -163,7 +163,7 @@ export default function HomePage() {
                       className={cn(
                         "px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all border whitespace-nowrap flex items-center gap-1.5",
                         selectedLabels.includes(label.name)
-                          ? "bg-orange-500 text-white border-orange-500"
+                          ? "bg-primary-500 text-white border-primary-500"
                           : "bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 text-slate-400"
                       )}
                     >
@@ -197,12 +197,12 @@ export default function HomePage() {
             {(searchTerm || selectedLabels.length > 0) ? (
               <button 
                 onClick={() => { setSearchTerm(''); setSelectedLabels([]); }}
-                className="mt-4 text-orange-500 font-bold uppercase tracking-widest text-xs"
+                className="mt-4 text-primary-500 font-bold uppercase tracking-widest text-xs"
               >
                 Clear Filters
               </button>
             ) : (
-              <Link to="/add" className="mt-4 inline-flex items-center gap-2 text-orange-500 font-medium">
+              <Link to="/add" className="mt-4 inline-flex items-center gap-2 text-primary-500 font-medium">
                 <Plus size={18} />
                 Add your first recipe
               </Link>

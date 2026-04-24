@@ -84,14 +84,14 @@ export default function LabelManagementPage() {
           <input
             type="text"
             placeholder="New label name (e.g. Italian)"
-            className="flex-1 px-4 py-3 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 focus:ring-2 focus:ring-orange-500/20 font-bold"
+            className="flex-1 px-4 py-3 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 focus:ring-2 focus:ring-primary-500/20 font-bold"
             value={newLabelName}
             onChange={(e) => setNewLabelName(e.target.value)}
           />
           <button
             type="submit"
             disabled={saving || !newLabelName.trim()}
-            className="px-6 bg-orange-500 text-white rounded-2xl font-bold disabled:opacity-50 transition-all active:scale-95 flex items-center justify-center"
+            className="px-6 bg-primary-500 text-white rounded-2xl font-bold disabled:opacity-50 transition-all active:scale-95 flex items-center justify-center"
           >
             {saving ? <Loader2 className="animate-spin" size={20} /> : <Plus size={20} />}
           </button>
@@ -102,7 +102,7 @@ export default function LabelManagementPage() {
         <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-zinc-500 ml-4">Your Labels</h3>
         {loading ? (
           <div className="flex justify-center py-10">
-            <Loader2 className="animate-spin text-orange-500" size={32} />
+            <Loader2 className="animate-spin text-primary-500" size={32} />
           </div>
         ) : labels.length > 0 ? (
           <div className="grid gap-2">
@@ -116,7 +116,7 @@ export default function LabelManagementPage() {
                   className="flex items-center justify-between p-4 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-100 dark:border-zinc-800 shadow-sm"
                 >
                   <div className="flex items-center gap-3">
-                    <Tag size={18} className="text-orange-500" />
+                    <Tag size={18} className="text-primary-500" />
                     <span className="font-bold">{label.name}</span>
                   </div>
                   <button

@@ -12,12 +12,8 @@ import LabelManagementPage from './pages/LabelManagementPage';
 import { auth } from './lib/firebase';
 import { onAuthStateChanged, User, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
 import { useOnlineStatus } from './lib/hooks';
-
-const ThemeContext = createContext<{ theme: 'light' | 'dark', toggleTheme: () => void }>({ theme: 'light', toggleTheme: () => {} });
-
-export function useTheme() {
-  return useContext(ThemeContext);
-}
+import { AccentColor, ACCENT_COLORS } from './lib/colors';
+import { ThemeContext, useTheme } from './lib/ThemeContext';
 
 function LoginPage() {
   const [loading, setLoading] = useState(false);
@@ -43,7 +39,7 @@ function LoginPage() {
         className="w-full max-w-sm text-center space-y-8"
       >
         <div className="flex flex-col items-center gap-4">
-          <div className="w-20 h-20 bg-orange-500 rounded-3xl flex items-center justify-center shadow-xl shadow-orange-500/20 text-white">
+          <div className="w-20 h-20 bg-primary-500 rounded-3xl flex items-center justify-center shadow-xl shadow-primary-500/20 text-white transition-colors duration-500">
             <ChefHat size={48} />
           </div>
           <h1 className="text-4xl font-black tracking-tighter uppercase">CookBook</h1>
@@ -56,7 +52,7 @@ function LoginPage() {
           className="w-full py-4 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl font-bold flex items-center justify-center gap-3 shadow-sm hover:shadow-md transition-all active:scale-95 disabled:opacity-50"
         >
           {loading ? (
-            <div className="w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+            <div className="w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
           ) : (
             <>
               <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/pwa_site/google.svg" className="w-5 h-5" alt="Google" referrerPolicy="no-referrer" />
@@ -131,7 +127,7 @@ function Layout({ children }: { children: React.ReactNode }) {
                 className={({ isActive }) => 
                   cn(
                     "flex flex-col items-center gap-1 transition-colors relative px-4 py-1",
-                    isActive ? "text-orange-500" : "text-slate-400 dark:text-zinc-500"
+                    isActive ? "text-primary-500" : "text-slate-400 dark:text-zinc-500"
                   )
                 }
               >
@@ -140,7 +136,7 @@ function Layout({ children }: { children: React.ReactNode }) {
                 {isActive && (
                   <motion.div
                     layoutId="tab-underline"
-                    className="absolute -bottom-2 h-0.5 w-8 bg-orange-500 rounded-full"
+                    className="absolute -bottom-2 h-0.5 w-8 bg-primary-500 rounded-full"
                   />
                 )}
               </NavLink>
@@ -172,6 +168,13 @@ export default function App() {
     return 'light';
   });
 
+  const [accentColor, setAccentColor] = useState<AccentColor>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('accentColor') as AccentColor) || 'orange';
+    }
+    return 'orange';
+  });
+
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -187,11 +190,27 @@ export default function App() {
       });
     } else {
       root.classList.remove('dark');
-      metaThemeColors.forEach(meta => {
-        meta.setAttribute('content', '#f97316');
-      });
+      // Light mode content will be set by the accentColor useEffect
     }
   }, [theme]);
+
+  useEffect(() => {
+    localStorage.setItem('accentColor', accentColor);
+    const root = document.documentElement;
+    const colors = ACCENT_COLORS[accentColor];
+    
+    Object.entries(colors).forEach(([shade, hex]) => {
+      root.style.setProperty(`--primary-${shade}`, hex);
+    });
+    
+    // Update theme-color meta if light mode
+    if (theme === 'light') {
+      const metaThemeColors = document.querySelectorAll('meta[name="theme-color"]');
+      metaThemeColors.forEach(meta => {
+        meta.setAttribute('content', colors[500]);
+      });
+    }
+  }, [accentColor, theme]);
 
   useEffect(() => {
     return onAuthStateChanged(auth, (u) => {
@@ -209,21 +228,21 @@ export default function App() {
   if (loading) {
     return (
       <div className="h-screen w-screen flex items-center justify-center bg-slate-50 dark:bg-zinc-950">
-        <ChefHat className="animate-bounce text-orange-500" size={48} />
+        <ChefHat className="animate-bounce text-primary-500 transition-colors duration-500" size={48} />
       </div>
     );
   }
 
   if (!user) {
     return (
-      <ThemeContext.Provider value={{ theme, toggleTheme }}>
+      <ThemeContext.Provider value={{ theme, toggleTheme, accentColor, setAccentColor }}>
         <LoginPage />
       </ThemeContext.Provider>
     );
   }
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, toggleTheme, accentColor, setAccentColor }}>
       <Router>
         <Layout>
           <Routes>
