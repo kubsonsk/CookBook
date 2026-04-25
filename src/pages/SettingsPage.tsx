@@ -2,12 +2,12 @@ import React, { useRef, useState } from 'react';
 import { useTheme } from '../lib/ThemeContext';
 import { signOut } from 'firebase/auth';
 import { auth, db } from '../lib/firebase';
-import { Moon, Sun, LogOut, ChevronRight, User, Info, Tag, Palette, Upload, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Moon, Sun, LogOut, ChevronRight, User, Info, Tag, Palette, Upload, Loader2, CheckCircle2, AlertCircle, Trash2, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ACCENT_COLORS, AccentColor } from '../lib/colors';
 import { cn } from '../lib/utils';
-import { collection, writeBatch, doc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
+import { collection, writeBatch, doc, serverTimestamp, query, where, getDocs, deleteDoc } from 'firebase/firestore';
 import { Recipe } from '../types';
 
 export default function SettingsPage() {
@@ -15,11 +15,37 @@ export default function SettingsPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [importStatus, setImportStatus] = useState<'idle' | 'importing' | 'success' | 'error'>('idle');
   const [importMessage, setImportMessage] = useState('');
+  
+  const [showWipeModal, setShowWipeModal] = useState(false);
+  const [isWiping, setIsWiping] = useState(false);
 
   const user = auth.currentUser;
 
   const handleImportClick = () => {
     fileInputRef.current?.click();
+  };
+
+  const handleWipeRecipes = async () => {
+    if (!user) return;
+    setIsWiping(true);
+    try {
+      const q = query(collection(db, 'recipes'), where('ownerId', '==', user.uid));
+      const snap = await getDocs(q);
+      
+      const batch = writeBatch(db);
+      snap.docs.forEach((d) => {
+        batch.delete(d.ref);
+      });
+      
+      await batch.commit();
+      setShowWipeModal(false);
+      alert(`Successfully wiped ${snap.docs.length} recipes.`);
+    } catch (err) {
+      console.error('Wipe error:', err);
+      alert('Failed to wipe recipes.');
+    } finally {
+      setIsWiping(false);
+    }
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -298,21 +324,65 @@ export default function SettingsPage() {
       </section>
 
       <section className="space-y-4">
-        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-zinc-500 ml-4">About</h3>
-        <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-slate-100 dark:border-zinc-800 overflow-hidden shadow-sm">
-          <div className="flex items-center justify-between p-4">
-            <div className="flex items-center gap-3 text-slate-600 dark:text-zinc-400">
-              <Info size={20} />
-              <span className="font-bold">Version</span>
+        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-red-500 ml-4">Danger Zone</h3>
+        <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-red-100 dark:border-red-950/20 overflow-hidden shadow-sm">
+          <button 
+            onClick={() => setShowWipeModal(true)}
+            className="w-full flex items-center justify-between p-4 hover:bg-red-50 dark:hover:bg-red-950/10 transition-colors group"
+          >
+            <div className="flex items-center gap-3 text-red-500">
+              <Trash2 size={20} />
+              <span className="font-bold">Wipe All Recipes</span>
             </div>
-            <span className="text-xs font-mono text-slate-300">1.2.0</span>
-          </div>
+            <ChevronRight size={18} className="text-red-200 group-hover:text-red-400 transition-colors" />
+          </button>
         </div>
       </section>
 
       <div className="text-center pt-8">
         <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-300 dark:text-zinc-700">Made with 🧡 for local chefs</p>
       </div>
+
+      <AnimatePresence>
+        {showWipeModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="bg-white dark:bg-zinc-900 rounded-3xl p-6 max-w-sm w-full shadow-2xl space-y-6"
+            >
+              <div className="flex flex-col items-center text-center space-y-3">
+                <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 text-red-500 rounded-full flex items-center justify-center">
+                  <AlertTriangle size={32} />
+                </div>
+                <h3 className="text-xl font-black uppercase tracking-tight text-red-600">Danger Zone</h3>
+                <p className="text-sm text-slate-500 dark:text-zinc-400">
+                  Are you absolutely sure? This will permanently delete ALL your recipes. This action cannot be undone.
+                </p>
+              </div>
+
+              <div className="grid gap-3">
+                <button
+                  disabled={isWiping}
+                  onClick={handleWipeRecipes}
+                  className="w-full py-3 bg-red-500 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2"
+                >
+                  {isWiping ? <Loader2 className="animate-spin" size={18} /> : <Trash2 size={18} />}
+                  Yes, Wipe Everything
+                </button>
+                <button
+                  disabled={isWiping}
+                  onClick={() => setShowWipeModal(false)}
+                  className="w-full py-3 bg-slate-100 dark:bg-zinc-800 rounded-xl font-bold text-sm"
+                >
+                  Cancel
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
