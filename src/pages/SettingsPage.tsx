@@ -256,12 +256,7 @@ export default function SettingsPage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-5 h-5 flex items-center justify-center">
-                  <motion.div
-                    whileHover={{ y: 2 }}
-                    className="text-primary-500"
-                  >
-                    <ChevronRight size={20} className="rotate-90" />
-                  </motion.div>
+                    <ChevronRight size={20} className="rotate-90 text-primary-500" />
                 </div>
                 <span className="font-bold">Bulk Export</span>
               </div>
