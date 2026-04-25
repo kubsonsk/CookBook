@@ -4,7 +4,7 @@ import { doc, getDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { Recipe } from '../types';
 import { 
-  ArrowLeft, Clock, Users, Star, Edit, Trash2, 
+  ArrowLeft, Clock, Users, Edit, Trash2, 
   Share2, Play, ChevronRight, CheckCircle2, ListChecks, Tag
 } from 'lucide-react';
 import { motion } from 'framer-motion';

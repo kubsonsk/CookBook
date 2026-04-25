@@ -248,7 +248,7 @@ export default function SettingsPage() {
                     const recipes = snap.docs.map(d => {
                       const data = d.data();
                       // Remove internal fields for export
-                      const { ownerId, createdAt, updatedAt, ...exportData } = data;
+                      const { ownerId, createdAt, updatedAt, rating, ...exportData } = data;
                       return exportData;
                     });
                     
