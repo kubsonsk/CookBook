@@ -1,0 +1,33 @@
+[
+       {
+         "title": "Classic Pancakes",
+         "servings": 4,
+         "prepTime": 20,
+         "heroImageUrl": "https://images.unsplash.com/photo-1567620905732-2d1ec7bb7445",
+         "labels": ["Breakfast", "Sweet"],
+         "ingredients": [
+           { "name": "Flour", "amount": 200, "unit": "g" },
+          { "name": "Milk", "amount": 300, "unit": "ml" },
+          { "name": "Egg", "amount": 1, "unit": "pcs" }
+        ],
+        "steps": [
+          { "text": "Mix all ingredients in a large bowl until smooth." },
+          { "text": "Heat a non-stick pan over medium heat and pour small circles of batter." },
+          { "text": "Flip when bubbles appear and cook until golden brown.", "imageUrl": "https://example.com/step3.jpg" }
+        ]
+      },
+      {
+        "title": "Simple Tomato Pasta",
+        "servings": 2,
+        "prepTime": 15,
+        "labels": ["Dinner", "Quick"],
+        "ingredients": [
+          { "name": "Pasta", "amount": 200, "unit": "g" },
+          { "name": "Tomato Sauce", "amount": 400, "unit": "ml" }
+        ],
+        "steps": [
+          { "text": "Boil pasta in salted water." },
+          { "text": "Mix with sauce and serve." }
+        ]
+      }
+    ]
