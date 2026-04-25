@@ -1,17 +1,104 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { useTheme } from '../lib/ThemeContext';
 import { signOut } from 'firebase/auth';
-import { auth } from '../lib/firebase';
-import { Moon, Sun, LogOut, ChevronRight, User, Info, Tag, Palette } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { auth, db } from '../lib/firebase';
+import { Moon, Sun, LogOut, ChevronRight, User, Info, Tag, Palette, Upload, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ACCENT_COLORS, AccentColor } from '../lib/colors';
 import { cn } from '../lib/utils';
+import { collection, writeBatch, doc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
+import { Recipe } from '../types';
 
 export default function SettingsPage() {
   const { theme, toggleTheme, accentColor, setAccentColor } = useTheme();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [importStatus, setImportStatus] = useState<'idle' | 'importing' | 'success' | 'error'>('idle');
+  const [importMessage, setImportMessage] = useState('');
 
   const user = auth.currentUser;
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    setImportStatus('importing');
+    setImportMessage('Reading file...');
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const json = JSON.parse(event.target?.result as string);
+        const recipes = Array.isArray(json) ? json : [json];
+
+        setImportMessage(`Importing ${recipes.length} recipes...`);
+
+        // Get existing labels to avoid duplicates
+        const labelsQuery = query(collection(db, 'labels'), where('ownerId', '==', user.uid));
+        const labelsSnap = await getDocs(labelsQuery);
+        const existingLabelNames = new Set(labelsSnap.docs.map(d => d.data().name.toLowerCase()));
+
+        const batch = writeBatch(db);
+        const newLabels = new Set<string>();
+
+        recipes.forEach((r: any) => {
+          if (!r.title) return;
+
+          const recipeRef = doc(collection(db, 'recipes'));
+          const recipeData: Recipe = {
+            title: r.title,
+            servings: r.servings || 2,
+            prepTime: r.prepTime || 30,
+            heroImageUrl: r.heroImageUrl || '',
+            videoUrl: r.videoUrl || '',
+            labels: Array.isArray(r.labels) ? r.labels : [],
+            ingredients: Array.isArray(r.ingredients) ? r.ingredients : [],
+            steps: Array.isArray(r.steps) ? r.steps : [],
+            ownerId: user.uid,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          };
+
+          batch.set(recipeRef, recipeData);
+
+          // Collect new labels
+          recipeData.labels.forEach(labelName => {
+            if (!existingLabelNames.has(labelName.toLowerCase())) {
+              newLabels.add(labelName);
+            }
+          });
+        });
+
+        // Add new labels to batch
+        newLabels.forEach(labelName => {
+          const labelRef = doc(collection(db, 'labels'));
+          batch.set(labelRef, {
+            name: labelName,
+            ownerId: user.uid,
+            createdAt: serverTimestamp(),
+          });
+          existingLabelNames.add(labelName.toLowerCase()); // Avoid adding same label multiple times in one import
+        });
+
+        await batch.commit();
+        setImportStatus('success');
+        setImportMessage(`Successfully imported ${recipes.length} recipes.`);
+        
+        setTimeout(() => setImportStatus('idle'), 3000);
+      } catch (err) {
+        console.error('Import error:', err);
+        setImportStatus('error');
+        setImportMessage('Failed to parse or import JSON. Check file format.');
+      }
+    };
+    reader.readAsText(file);
+    // Reset input
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
 
   return (
     <div className="space-y-8 pb-12">
@@ -106,7 +193,7 @@ export default function SettingsPage() {
 
       <section className="space-y-4">
         <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-zinc-500 ml-4">Content</h3>
-        <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-slate-100 dark:border-zinc-800 overflow-hidden shadow-sm">
+        <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-slate-100 dark:border-zinc-800 overflow-hidden shadow-sm divide-y divide-slate-50 dark:divide-zinc-800/50">
           <Link 
             to="/settings/labels"
             className="w-full flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-zinc-800/50 transition-colors group"
@@ -117,6 +204,96 @@ export default function SettingsPage() {
             </div>
             <ChevronRight size={18} className="text-slate-300 group-hover:translate-x-1 transition-transform" />
           </Link>
+
+          <div className="p-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Upload size={20} className="text-primary-500" />
+                <span className="font-bold">Bulk Import</span>
+              </div>
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleFileChange} 
+                accept=".json" 
+                className="hidden" 
+              />
+              <button
+                disabled={importStatus === 'importing'}
+                onClick={handleImportClick}
+                className="px-4 py-2 bg-primary-100 dark:bg-primary-950/30 text-primary-600 dark:text-primary-400 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-primary-200 dark:hover:bg-primary-900/50 transition-colors disabled:opacity-50"
+              >
+                Choose JSON
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-5 h-5 flex items-center justify-center">
+                  <motion.div
+                    whileHover={{ y: 2 }}
+                    className="text-primary-500"
+                  >
+                    <ChevronRight size={20} className="rotate-90" />
+                  </motion.div>
+                </div>
+                <span className="font-bold">Bulk Export</span>
+              </div>
+              <button
+                onClick={async () => {
+                  if (!user) return;
+                  try {
+                    const q = query(collection(db, 'recipes'), where('ownerId', '==', user.uid));
+                    const snap = await getDocs(q);
+                    const recipes = snap.docs.map(d => {
+                      const data = d.data();
+                      // Remove internal fields for export
+                      const { ownerId, createdAt, updatedAt, ...exportData } = data;
+                      return exportData;
+                    });
+                    
+                    const blob = new Blob([JSON.stringify(recipes, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `cookbook-export-${new Date().toISOString().split('T')[0]}.json`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  } catch (err) {
+                    console.error('Export error:', err);
+                    alert('Failed to export recipes.');
+                  }
+                }}
+                className="px-4 py-2 bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-slate-200 dark:hover:bg-zinc-700 transition-colors"
+              >
+                Download JSON
+              </button>
+            </div>
+            
+            <AnimatePresence mode="wait">
+              {importStatus !== 'idle' && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className={cn(
+                    "p-3 rounded-2xl flex items-center gap-3 text-sm font-medium",
+                    importStatus === 'importing' && "bg-slate-50 dark:bg-zinc-800/50 text-slate-500",
+                    importStatus === 'success' && "bg-green-50 dark:bg-green-950/20 text-green-600 dark:text-green-400",
+                    importStatus === 'error' && "bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400"
+                  )}
+                >
+                  {importStatus === 'importing' && <Loader2 size={18} className="animate-spin" />}
+                  {importStatus === 'success' && <CheckCircle2 size={18} />}
+                  {importStatus === 'error' && <AlertCircle size={18} />}
+                  {importMessage}
+                </motion.div>
+              )}
+            </AnimatePresence>
+            <p className="text-[10px] text-slate-400 dark:text-zinc-500 leading-relaxed px-1">
+              Import multiple recipes from a JSON file. Ensure the format matches the expected recipe structure.
+            </p>
+          </div>
         </div>
       </section>
 
