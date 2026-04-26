@@ -22,6 +22,9 @@
   html,
   body {
     @apply transition-colors duration-300 ease-in-out;
+    overflow-x: hidden;
+    position: relative;
+    width: 100%;
   }
 }
 
@@ -38,7 +41,6 @@
 :root {
   background-color: #09090b; /* Matches your dark theme-color */
 }
-
 body {
   background-color: #09090b;
   /* Use this to prevent content from hiding under the status bar */
