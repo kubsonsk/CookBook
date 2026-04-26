@@ -5,7 +5,7 @@ import { db, auth } from '../lib/firebase';
 import { Recipe, Ingredient, Step, Label } from '../types';
 import { 
   ArrowLeft, Plus, Trash2, Image as ImageIcon, Video, 
-  Sparkles, Loader2, Save, X, AlertTriangle, Tag
+  Sparkles, Loader2, Save, X, AlertTriangle, Tag, Search
 } from 'lucide-react';
 import { extractRecipeFromUrl } from '../lib/gemini';
 import { cn } from '../lib/utils';
@@ -27,6 +27,7 @@ export default function RecipeFormPage() {
   const [serverVersion, setServerVersion] = useState<Recipe | null>(null);
 
   const [availableLabels, setAvailableLabels] = useState<Label[]>([]);
+  const [labelSearch, setLabelSearch] = useState('');
 
   const [recipe, setRecipe] = useState<Partial<Recipe>>({
     title: '',
@@ -232,14 +233,13 @@ export default function RecipeFormPage() {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
-      className="space-y-6 pb-20"
+      className="space-y-8 pb-20"
     >
-      <div className="flex items-center justify-between -mt-2">
+      <div className="space-y-4">
         <button onClick={() => navigate(-1)} className="p-2 -ml-2 text-slate-600 dark:text-zinc-400">
           <ArrowLeft size={24} />
         </button>
-        <h2 className="text-xl font-black uppercase tracking-tight">{isEdit ? 'Edit Recipe' : 'New Recipe'}</h2>
-        <div className="w-10" />
+        <h2 className="text-3xl font-black uppercase tracking-tighter leading-tight">{isEdit ? 'Edit Recipe' : 'New Recipe'}</h2>
       </div>
 
       {!isEdit && (
@@ -335,18 +335,52 @@ export default function RecipeFormPage() {
 
         {availableLabels.length > 0 && (
           <section className="space-y-3">
-            <span className="text-xs font-bold uppercase tracking-widest text-slate-400 block">Labels</span>
-            <div className="flex flex-wrap gap-2">
-              {availableLabels.map(label => (
+            <div className="flex items-center justify-between px-1">
+              <span className="text-xs font-bold uppercase tracking-widest text-slate-400 block">Labels</span>
+              {recipe.labels && recipe.labels.length > 0 && (
+                <span className="text-[10px] font-black text-primary-500 uppercase tracking-widest bg-primary-50 dark:bg-primary-950/30 px-2 py-0.5 rounded-full">
+                  {recipe.labels.length} Selected
+                </span>
+              )}
+            </div>
+            
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+              <input
+                type="text"
+                placeholder="Find label..."
+                className="w-full pl-9 pr-8 py-2 rounded-xl bg-slate-50 dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-xs focus:ring-1 focus:ring-primary-500/20 outline-none"
+                value={labelSearch}
+                onChange={(e) => setLabelSearch(e.target.value)}
+              />
+              {labelSearch && (
+                <button 
+                  onClick={() => setLabelSearch('')}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600"
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </div>
+
+            <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 no-scrollbar scroll-smooth">
+              {availableLabels
+                .filter(l => l.name.toLowerCase().includes(labelSearch.toLowerCase()))
+                .sort((a, b) => {
+                  const aSelected = recipe.labels?.includes(a.name) ? 1 : 0;
+                  const bSelected = recipe.labels?.includes(b.name) ? 1 : 0;
+                  return bSelected - aSelected;
+                })
+                .map(label => (
                 <button
                   key={label.id}
                   type="button"
                   onClick={() => toggleLabel(label.name)}
                   className={cn(
-                    "px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all border flex items-center gap-2",
+                    "px-4 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all border flex items-center gap-2 whitespace-nowrap",
                     recipe.labels?.includes(label.name)
-                      ? "bg-primary-500 text-white border-primary-500"
-                      : "bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 text-slate-500"
+                      ? "bg-primary-500 text-white border-primary-500 shadow-md shadow-primary-500/20"
+                      : "bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 text-slate-500 hover:border-primary-500/30"
                   )}
                 >
                   <Tag size={12} />

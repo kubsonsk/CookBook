@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import { useTheme } from '../lib/ThemeContext';
 import { signOut } from 'firebase/auth';
 import { auth, db } from '../lib/firebase';
-import { Moon, Sun, LogOut, ChevronRight, User, Info, Tag, Palette, Upload, Loader2, CheckCircle2, AlertCircle, Trash2, AlertTriangle } from 'lucide-react';
+import { Moon, Sun, LogOut, ChevronRight, User, Info, Tag, Palette, FileUp, FileDown, Loader2, CheckCircle2, AlertCircle, Trash2, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ACCENT_COLORS, AccentColor } from '../lib/colors';
@@ -223,8 +223,8 @@ export default function SettingsPage() {
       </section>
 
       <section className="space-y-4">
-        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-zinc-500 ml-4">Content</h3>
-        <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-slate-100 dark:border-zinc-800 overflow-hidden shadow-sm divide-y divide-slate-50 dark:divide-zinc-800/50">
+        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-zinc-500 ml-4">Organization</h3>
+        <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-slate-100 dark:border-zinc-800 overflow-hidden shadow-sm">
           <Link 
             to="/settings/labels"
             className="w-full flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-zinc-800/50 transition-colors group"
@@ -235,11 +235,16 @@ export default function SettingsPage() {
             </div>
             <ChevronRight size={18} className="text-slate-300 group-hover:translate-x-1 transition-transform" />
           </Link>
+        </div>
+      </section>
 
+      <section className="space-y-4">
+        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-zinc-500 ml-4">Data & Backup</h3>
+        <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-slate-100 dark:border-zinc-800 overflow-hidden shadow-sm divide-y divide-slate-50 dark:divide-zinc-800/50">
           <div className="p-4 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <Upload size={20} className="text-primary-500" />
+                <FileUp size={20} className="text-primary-500" />
                 <span className="font-bold">Bulk Import</span>
               </div>
               <input 
@@ -260,9 +265,7 @@ export default function SettingsPage() {
 
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-5 h-5 flex items-center justify-center">
-                    <ChevronRight size={20} className="rotate-90 text-primary-500" />
-                </div>
+                <FileDown size={20} className="text-primary-500" />
                 <span className="font-bold">Bulk Export</span>
               </div>
               <button

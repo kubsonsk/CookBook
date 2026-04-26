@@ -8,6 +8,7 @@ coverage/
 !.env.example
 # gemini-cli settings
 .gemini/
+!.gemini/GEMINI.md
 
 # GitHub App credentials
 gha-creds-*.json
