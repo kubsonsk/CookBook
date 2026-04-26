@@ -72,7 +72,12 @@ export default function RecipeDetailPage() {
   const scale = servings / (recipe.servings || 1);
 
   return (
-    <div className="space-y-6 pb-12">
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2 }}
+      className="space-y-6 pb-12"
+    >
       <div className="flex items-center justify-between -mt-2">
         <button onClick={() => navigate(-1)} className="p-2 -ml-2 text-slate-600 dark:text-zinc-400">
           <ArrowLeft size={24} />
@@ -236,7 +241,7 @@ export default function RecipeDetailPage() {
           I'm done cooking!
         </button>
       </div>
-    </div>
+    </motion.div>
   );
 }
 

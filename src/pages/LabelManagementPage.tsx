@@ -70,7 +70,12 @@ export default function LabelManagementPage() {
   };
 
   return (
-    <div className="space-y-6 pb-20">
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2 }}
+      className="space-y-6 pb-20"
+    >
       <div className="flex items-center justify-between -mt-2">
         <button onClick={() => navigate(-1)} className="p-2 -ml-2 text-slate-600 dark:text-zinc-400">
           <ArrowLeft size={24} />
@@ -135,6 +140,6 @@ export default function LabelManagementPage() {
           </div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }

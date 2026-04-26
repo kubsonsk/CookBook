@@ -127,7 +127,12 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="space-y-8 pb-12">
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2 }}
+      className="space-y-8 pb-12"
+    >
       <div className="space-y-2">
         <h2 className="text-3xl font-black uppercase tracking-tighter leading-tight">Settings</h2>
         <p className="text-slate-400 dark:text-zinc-500 text-sm">Personalize your cooking experience.</p>
@@ -378,6 +383,6 @@ export default function SettingsPage() {
           </div>
         )}
       </AnimatePresence>
-    </div>
+    </motion.div>
   );
 }

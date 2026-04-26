@@ -81,7 +81,12 @@ export default function HomePage() {
   });
 
   return (
-    <div className="space-y-6">
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2 }}
+      className="space-y-6"
+    >
       <div className="space-y-4">
         <div className="flex justify-between items-center mt-4">
           <div className="flex items-center gap-3">
@@ -210,6 +215,6 @@ export default function HomePage() {
           </div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }

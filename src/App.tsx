@@ -99,20 +99,10 @@ function Layout({ children }: { children: React.ReactNode }) {
   ];
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 pb-20 font-sans transition-colors duration-300">
+    <div className="flex flex-col h-screen bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 font-sans transition-colors duration-300 overflow-hidden">
       <OfflineBanner />
-      <main className="flex-1 w-full max-w-2xl mx-auto px-4 py-6">
-        <AnimatePresence>
-          <motion.div
-            key={location.pathname}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-          >
-            {children}
-          </motion.div>
-        </AnimatePresence>
+      <main className="flex-1 w-full max-w-2xl mx-auto px-4 py-6 overflow-y-auto pb-32">
+        {children}
       </main>
 
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-lg border-t border-slate-200 dark:border-zinc-800 pb-safe">
