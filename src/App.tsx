@@ -101,7 +101,7 @@ function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex flex-col h-screen bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 font-sans transition-colors duration-300 overflow-hidden">
       <OfflineBanner />
-      <main className="flex-1 w-full max-w-2xl mx-auto px-4 py-6 overflow-y-auto pb-32">
+      <main className="flex-1 w-full max-w-2xl mx-auto px-4 py-6 overflow-y-auto overflow-x-hidden pb-32">
         {children}
       </main>
 
