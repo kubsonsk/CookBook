@@ -85,59 +85,61 @@ export default function HomePage() {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
-      className="space-y-6"
+      className="space-y-8"
     >
-      <div className="space-y-4">
-        <div className="flex justify-between items-center mt-4">
-          <div className="flex items-center gap-3">
-            <h2 className="text-xl font-bold uppercase tracking-tight text-slate-800 dark:text-zinc-100">
-              All Recipes
-            </h2>
-            {isSyncing && isOnline && (
-              <div className="flex items-center gap-1.5 px-2 py-0.5 bg-primary-100 dark:bg-primary-950/30 text-primary-600 dark:text-primary-400 rounded-full animate-pulse">
-                <Loader2 size={10} className="animate-spin" />
-                <span className="text-[10px] font-bold uppercase tracking-widest">Syncing</span>
+      <div className="space-y-6">
+        <div className="flex flex-col gap-4 mt-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <h2 className="text-3xl font-black uppercase tracking-tighter leading-tight text-slate-800 dark:text-zinc-100">
+                All Recipes
+              </h2>
+              {isSyncing && isOnline && (
+                <div className="flex items-center gap-1.5 px-2 py-0.5 bg-primary-100 dark:bg-primary-950/30 text-primary-600 dark:text-primary-400 rounded-full animate-pulse">
+                  <Loader2 size={10} className="animate-spin" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest">Syncing</span>
+                </div>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsSearchVisible(!isSearchVisible)}
+                className={cn(
+                  "p-2 rounded-full transition-all relative",
+                  isSearchVisible ? "bg-primary-100 text-primary-500" : "text-slate-400 hover:text-primary-500"
+                )}
+              >
+                <Search size={20} />
+                {(searchTerm || selectedLabels.length > 0) && !isSearchVisible && (
+                  <div className="absolute top-0 right-0 w-2 h-2 bg-primary-500 rounded-full border-2 border-slate-50 dark:border-zinc-950" />
+                )}
+              </button>
+              <div className="flex gap-2 p-1 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-full">
+                <button
+                  onClick={() => setViewMode('card')}
+                  className={cn(
+                    "p-1.5 rounded-full transition-all",
+                    viewMode === 'card'
+                      ? "bg-primary-500 text-white shadow-md shadow-primary-500/20"
+                      : "text-slate-400 hover:text-primary-500"
+                  )}
+                  aria-label="Show as cards"
+                >
+                  <LayoutGrid size={18} />
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={cn(
+                    "p-1.5 rounded-full transition-all",
+                    viewMode === 'list'
+                      ? "bg-primary-500 text-white shadow-md shadow-primary-500/20"
+                      : "text-slate-400 hover:text-primary-500"
+                  )}
+                  aria-label="Show as list"
+                >
+                  <List size={18} />
+                </button>
               </div>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setIsSearchVisible(!isSearchVisible)}
-              className={cn(
-                "p-2 rounded-full transition-all relative",
-                isSearchVisible ? "bg-primary-100 text-primary-500" : "text-slate-400 hover:text-primary-500"
-              )}
-            >
-              <Search size={20} />
-              {(searchTerm || selectedLabels.length > 0) && !isSearchVisible && (
-                <div className="absolute top-0 right-0 w-2 h-2 bg-primary-500 rounded-full border-2 border-slate-50 dark:border-zinc-950" />
-              )}
-            </button>
-            <div className="flex gap-2 p-1 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-full">
-              <button
-                onClick={() => setViewMode('card')}
-                className={cn(
-                  "p-1.5 rounded-full transition-all",
-                  viewMode === 'card'
-                    ? "bg-primary-500 text-white shadow-md shadow-primary-500/20"
-                    : "text-slate-400 hover:text-primary-500"
-                )}
-                aria-label="Show as cards"
-              >
-                <LayoutGrid size={18} />
-              </button>
-              <button
-                onClick={() => setViewMode('list')}
-                className={cn(
-                  "p-1.5 rounded-full transition-all",
-                  viewMode === 'list'
-                    ? "bg-primary-500 text-white shadow-md shadow-primary-500/20"
-                    : "text-slate-400 hover:text-primary-500"
-                )}
-                aria-label="Show as list"
-              >
-                <List size={18} />
-              </button>
             </div>
           </div>
         </div>

@@ -74,14 +74,13 @@ export default function LabelManagementPage() {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
-      className="space-y-6 pb-20"
+      className="space-y-8 pb-20"
     >
-      <div className="flex items-center justify-between -mt-2">
+      <div className="space-y-4">
         <button onClick={() => navigate(-1)} className="p-2 -ml-2 text-slate-600 dark:text-zinc-400">
           <ArrowLeft size={24} />
         </button>
-        <h2 className="text-xl font-black uppercase tracking-tight">Manage Labels</h2>
-        <div className="w-10" />
+        <h2 className="text-3xl font-black uppercase tracking-tighter leading-tight">Manage Labels</h2>
       </div>
 
       <form onSubmit={handleAddLabel} className="space-y-4">
