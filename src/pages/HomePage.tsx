@@ -23,6 +23,21 @@ export default function HomePage() {
   const [isSearchVisible, setIsSearchVisible] = useState(false);
 
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = (e: any) => {
+      const scrollY = e.target.scrollTop;
+      setIsScrolled(scrollY > 150);
+    };
+
+    // The main scroll container is in App.tsx (main tag)
+    const mainElement = document.querySelector('main');
+    if (mainElement) {
+      mainElement.addEventListener('scroll', handleScroll);
+    }
+    return () => mainElement?.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     if (!auth.currentUser) return;
@@ -85,107 +100,148 @@ export default function HomePage() {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
-      className="space-y-6"
+      className="space-y-8"
     >
-      <div className="mt-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <h2 className="text-3xl font-black uppercase tracking-tighter leading-tight text-slate-800 dark:text-zinc-100">
-            All Recipes
-          </h2>
-          {isSyncing && isOnline && (
-            <div className="flex items-center gap-1.5 px-2 py-0.5 bg-primary-100 dark:bg-primary-950/30 text-primary-600 dark:text-primary-400 rounded-full animate-pulse">
-              <Loader2 size={10} className="animate-spin" />
-              <span className="text-[10px] font-bold uppercase tracking-widest">Syncing</span>
+      <div className="space-y-6">
+        <div className="flex flex-col gap-4 mt-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <h2 className="text-3xl font-black uppercase tracking-tighter leading-tight text-slate-800 dark:text-zinc-100">
+                All Recipes
+              </h2>
+              {isSyncing && isOnline && (
+                <div className="flex items-center gap-1.5 px-2 py-0.5 bg-primary-100 dark:bg-primary-950/30 text-primary-600 dark:text-primary-400 rounded-full animate-pulse">
+                  <Loader2 size={10} className="animate-spin" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest">Syncing</span>
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      </div>
-
-      <div className="sticky top-0 z-40 -mx-4 px-4 py-2 bg-slate-50/80 dark:bg-zinc-950/80 backdrop-blur-md space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex-1" /> {/* Spacer */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setIsSearchVisible(!isSearchVisible)}
-              className={cn(
-                "p-2 rounded-full transition-all relative",
-                isSearchVisible ? "bg-primary-100 text-primary-500" : "text-slate-400 hover:text-primary-500"
-              )}
-            >
-              <Search size={20} />
-              {(searchTerm || selectedLabels.length > 0) && !isSearchVisible && (
-                <div className="absolute top-0 right-0 w-2 h-2 bg-primary-500 rounded-full border-2 border-slate-50 dark:border-zinc-950" />
-              )}
-            </button>
-            <div className="flex gap-2 p-1 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-full shadow-sm">
+            <div className="flex items-center gap-2">
               <button
-                onClick={() => setViewMode('card')}
+                onClick={() => setIsSearchVisible(!isSearchVisible)}
                 className={cn(
-                  "p-1.5 rounded-full transition-all",
-                  viewMode === 'card'
-                    ? "bg-primary-500 text-white shadow-md shadow-primary-500/20"
-                    : "text-slate-400 hover:text-primary-500"
+                  "p-2 rounded-full transition-all relative",
+                  isSearchVisible ? "bg-primary-100 text-primary-500" : "text-slate-400 hover:text-primary-500"
                 )}
-                aria-label="Show as cards"
               >
-                <LayoutGrid size={18} />
-              </button>
-              <button
-                onClick={() => setViewMode('list')}
-                className={cn(
-                  "p-1.5 rounded-full transition-all",
-                  viewMode === 'list'
-                    ? "bg-primary-500 text-white shadow-md shadow-primary-500/20"
-                    : "text-slate-400 hover:text-primary-500"
+                <Search size={20} />
+                {(searchTerm || selectedLabels.length > 0) && !isSearchVisible && (
+                  <div className="absolute top-0 right-0 w-2 h-2 bg-primary-500 rounded-full border-2 border-slate-50 dark:border-zinc-950" />
                 )}
-                aria-label="Show as list"
-              >
-                <List size={18} />
               </button>
+              <div className="flex gap-2 p-1 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-full">
+                <button
+                  onClick={() => setViewMode('card')}
+                  className={cn(
+                    "p-1.5 rounded-full transition-all",
+                    viewMode === 'card'
+                      ? "bg-primary-500 text-white shadow-md shadow-primary-500/20"
+                      : "text-slate-400 hover:text-primary-500"
+                  )}
+                  aria-label="Show as cards"
+                >
+                  <LayoutGrid size={18} />
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={cn(
+                    "p-1.5 rounded-full transition-all",
+                    viewMode === 'list'
+                      ? "bg-primary-500 text-white shadow-md shadow-primary-500/20"
+                      : "text-slate-400 hover:text-primary-500"
+                  )}
+                  aria-label="Show as list"
+                >
+                  <List size={18} />
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
+        {/* Sticky Search Area (Top of screen when active) */}
         <AnimatePresence>
           {isSearchVisible && (
             <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1, marginBottom: 8 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden space-y-4"
-            >
-              <input
-                type="text"
-                placeholder="Search recipes or ingredients..."
-                className="w-full px-4 py-3 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 focus:ring-2 focus:ring-primary-500/20 outline-none font-bold shadow-sm"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                autoFocus
-              />
-              
-              {labels.length > 0 && (
-                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide no-scrollbar">
-                  {labels.map(label => (
-                    <button
-                      key={label.id}
-                      onClick={() => toggleLabel(label.name)}
-                      className={cn(
-                        "px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all border whitespace-nowrap flex items-center gap-1.5",
-                        selectedLabels.includes(label.name)
-                          ? "bg-primary-500 text-white border-primary-500"
-                          : "bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 text-slate-400 shadow-sm"
-                      )}
-                    >
-                      <TagIcon size={10} />
-                      {label.name}
-                    </button>
-                  ))}
-                </div>
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className={cn(
+                "z-40 space-y-4 transition-all duration-300",
+                isScrolled ? "fixed top-0 left-0 right-0 bg-slate-50/90 dark:bg-zinc-950/90 backdrop-blur-lg p-4 shadow-lg border-b border-slate-200 dark:border-zinc-800" : "relative"
               )}
+            >
+              <div className="max-w-2xl mx-auto space-y-4">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search recipes or ingredients..."
+                    className="w-full px-4 py-3 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 focus:ring-2 focus:ring-primary-500/20 outline-none font-bold"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    autoFocus
+                  />
+                  {isScrolled && (
+                    <button 
+                      onClick={() => setIsSearchVisible(false)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400"
+                    >
+                      <Plus size={20} className="rotate-45" />
+                    </button>
+                  )}
+                </div>
+                
+                {labels.length > 0 && (
+                  <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide no-scrollbar">
+                    {labels.map(label => (
+                      <button
+                        key={label.id}
+                        onClick={() => toggleLabel(label.name)}
+                        className={cn(
+                          "px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all border whitespace-nowrap flex items-center gap-1.5",
+                          selectedLabels.includes(label.name)
+                            ? "bg-primary-500 text-white border-primary-500"
+                            : "bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 text-slate-400"
+                        )}
+                      >
+                        <TagIcon size={10} />
+                        {label.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
+
+      {/* Floating Action Button (Search) */}
+      <AnimatePresence>
+        {isScrolled && !isSearchVisible && (
+          <motion.button
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0, opacity: 0 }}
+            onClick={() => {
+              setIsSearchVisible(true);
+              // Small delay to let the input mount before focus
+              setTimeout(() => {
+                document.querySelector('input')?.focus();
+              }, 100);
+            }}
+            className="fixed bottom-24 right-6 z-50 p-4 bg-primary-500 text-white rounded-full shadow-2xl shadow-primary-500/40 hover:scale-110 active:scale-95 transition-transform"
+            aria-label="Search recipes"
+          >
+            <Search size={24} />
+            {(searchTerm || selectedLabels.length > 0) && (
+              <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-white dark:border-zinc-950 flex items-center justify-center text-[8px] font-black">
+                !
+              </div>
+            )}
+          </motion.button>
+        )}
+      </AnimatePresence>
 
       <div className="grid gap-4">
         {loading ? (
