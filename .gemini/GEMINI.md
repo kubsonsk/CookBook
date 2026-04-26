@@ -23,6 +23,10 @@
 
 ### UI & UX
 - **Unified Typography:** Standardized all main page titles (Home, Add, Settings, Label Management) to use a consistent `text-3xl font-black uppercase` style, improving brand cohesion across the app.
+- **Scroll-Adaptive Search:**
+  - Implemented a Floating Action Button (FAB) for search that appears when the user scrolls down.
+  - Sticky search and filter bar that mounts to the top of the viewport when active during scroll, ensuring filtering is always accessible.
+  - View switcher remains in the non-sticky header to reduce visual noise during scroll.
 - **Header Refactoring:** Adjusted header layouts to accommodate larger typography while maintaining access to secondary actions like search and back navigation.
 - **Custom Accent Colors:** Users can now choose from a variety of accent colors (orange, blue, green, rose, purple, amber) which update the primary theme globally.
 - **View Modes:** Toggle between 'Card' and 'List' views on the HomePage, with the preference persisted in local storage.
