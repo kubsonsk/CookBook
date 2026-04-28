@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Home as HomeIcon, PlusCircle, Settings, ChefHat, LogOut, WifiOff } from 'lucide-react';
@@ -91,6 +91,13 @@ function OfflineBanner() {
 
 function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
+  const mainRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (mainRef.current) {
+      mainRef.current.scrollTo(0, 0);
+    }
+  }, [location.pathname]);
 
   const tabs = [
     { path: '/', label: 'Recipes', icon: HomeIcon },
@@ -101,7 +108,7 @@ function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex flex-col h-screen bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 font-sans transition-colors duration-300 overflow-hidden">
       <OfflineBanner />
-      <main className="flex-1 w-full max-w-2xl mx-auto px-4 py-6 overflow-y-auto overflow-x-hidden pb-32">
+      <main ref={mainRef} className="flex-1 w-full max-w-2xl mx-auto px-4 py-6 overflow-y-auto overflow-x-hidden pb-32">
         {children}
       </main>
 
