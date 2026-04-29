@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, useBlocker } from 'react-router-dom';
 import { doc, getDoc, addDoc, updateDoc, collection, serverTimestamp, query, where, onSnapshot, orderBy, getDocFromServer } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { Recipe, Ingredient, Step, Label } from '../types';
@@ -28,6 +28,23 @@ export default function RecipeFormPage() {
 
   const [availableLabels, setAvailableLabels] = useState<Label[]>([]);
   const [labelSearch, setLabelSearch] = useState('');
+  const [isDirty, setIsDirty] = useState(false);
+
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      isDirty && currentLocation.pathname !== nextLocation.pathname && !loading
+  );
+
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirty && !loading) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isDirty, loading]);
 
   const [recipe, setRecipe] = useState<Partial<Recipe>>({
     title: '',
@@ -59,14 +76,21 @@ export default function RecipeFormPage() {
   }, []);
 
   useEffect(() => {
-    if (isEdit) {
+    if (isEdit && id) {
       const fetchRecipe = async () => {
-        const docRef = doc(db, 'recipes', id);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          const data = docSnap.data() as Recipe;
-          setRecipe(data);
-          setOriginalUpdatedAt(data.updatedAt);
+        try {
+          const docRef = doc(db, 'recipes', id);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            const data = docSnap.data() as Recipe;
+            setRecipe(data);
+            setOriginalUpdatedAt(data.updatedAt);
+          } else {
+            console.error('Recipe not found');
+          }
+        } catch (err) {
+          console.error('Error fetching recipe:', err);
+          alert('Error fetching recipe: ' + (err as Error).message);
         }
       };
       fetchRecipe();
@@ -86,6 +110,7 @@ export default function RecipeFormPage() {
           ingredients: data.ingredients || [{ name: '', amount: 0, unit: 'g' }],
           steps: data.steps || [{ text: '' }],
         }));
+        setIsDirty(true);
       }
     } catch (err) {
       console.error(err);
@@ -111,9 +136,11 @@ export default function RecipeFormPage() {
           savePromise,
           new Promise(resolve => setTimeout(resolve, 800))
         ]);
+        setIsDirty(false);
         navigate('/');
       } else {
         await savePromise;
+        setIsDirty(false);
         navigate('/');
       }
     } catch (err) {
@@ -186,6 +213,7 @@ export default function RecipeFormPage() {
     } else {
       setRecipe({ ...recipe, labels: [...curLabels, labelName] });
     }
+    setIsDirty(true);
   };
 
   const addIngredient = () => {
@@ -193,12 +221,14 @@ export default function RecipeFormPage() {
       ...prev,
       ingredients: [...(prev.ingredients || []), { name: '', amount: 0, unit: 'g' }]
     }));
+    setIsDirty(true);
   };
 
   const updateIngredient = (index: number, field: keyof Ingredient, value: any) => {
     const newIngs = [...(recipe.ingredients || [])];
     newIngs[index] = { ...newIngs[index], [field]: value };
     setRecipe({ ...recipe, ingredients: newIngs });
+    setIsDirty(true);
   };
 
   const removeIngredient = (index: number) => {
@@ -206,6 +236,7 @@ export default function RecipeFormPage() {
       ...prev,
       ingredients: prev.ingredients?.filter((_, i) => i !== index)
     }));
+    setIsDirty(true);
   };
 
   const addStep = () => {
@@ -213,12 +244,14 @@ export default function RecipeFormPage() {
       ...prev,
       steps: [...(prev.steps || []), { text: '' }]
     }));
+    setIsDirty(true);
   };
 
   const updateStep = (index: number, field: keyof Step, value: any) => {
     const newSteps = [...(recipe.steps || [])];
     newSteps[index] = { ...newSteps[index], [field]: value };
     setRecipe({ ...recipe, steps: newSteps });
+    setIsDirty(true);
   };
 
   const removeStep = (index: number) => {
@@ -226,6 +259,7 @@ export default function RecipeFormPage() {
       ...prev,
       steps: prev.steps?.filter((_, i) => i !== index)
     }));
+    setIsDirty(true);
   };
 
   return (
@@ -280,7 +314,10 @@ export default function RecipeFormPage() {
               placeholder="e.g. Grandma's Apple Pie"
               className="w-full px-4 py-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 focus:ring-2 focus:ring-primary-500/20 font-bold text-lg"
               value={recipe.title}
-              onChange={(e) => setRecipe({ ...recipe, title: e.target.value })}
+              onChange={(e) => {
+                setRecipe({ ...recipe, title: e.target.value });
+                setIsDirty(true);
+              }}
             />
           </label>
 
@@ -292,7 +329,10 @@ export default function RecipeFormPage() {
                 min="1"
                 className="w-full px-4 py-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800"
                 value={recipe.servings}
-                onChange={(e) => setRecipe({ ...recipe, servings: parseInt(e.target.value) })}
+                onChange={(e) => {
+                  setRecipe({ ...recipe, servings: parseInt(e.target.value) });
+                  setIsDirty(true);
+                }}
               />
             </label>
             <label className="block">
@@ -301,7 +341,10 @@ export default function RecipeFormPage() {
                 type="number"
                 className="w-full px-4 py-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800"
                 value={recipe.prepTime}
-                onChange={(e) => setRecipe({ ...recipe, prepTime: parseInt(e.target.value) })}
+                onChange={(e) => {
+                  setRecipe({ ...recipe, prepTime: parseInt(e.target.value) });
+                  setIsDirty(true);
+                }}
               />
             </label>
           </div>
@@ -316,7 +359,10 @@ export default function RecipeFormPage() {
                   placeholder="Image URL"
                   className="w-full pl-10 pr-4 py-3 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-sm"
                   value={recipe.heroImageUrl || ''}
-                  onChange={(e) => setRecipe({ ...recipe, heroImageUrl: e.target.value })}
+                  onChange={(e) => {
+                    setRecipe({ ...recipe, heroImageUrl: e.target.value });
+                    setIsDirty(true);
+                  }}
                 />
               </div>
               <div className="relative">
@@ -326,7 +372,10 @@ export default function RecipeFormPage() {
                   placeholder="Video URL (YouTube)"
                   className="w-full pl-10 pr-4 py-3 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-sm"
                   value={recipe.videoUrl || ''}
-                  onChange={(e) => setRecipe({ ...recipe, videoUrl: e.target.value })}
+                  onChange={(e) => {
+                    setRecipe({ ...recipe, videoUrl: e.target.value });
+                    setIsDirty(true);
+                  }}
                 />
               </div>
             </div>
@@ -475,6 +524,44 @@ export default function RecipeFormPage() {
           {isEdit ? 'Update Recipe' : 'Save Recipe'}
         </button>
       </form>
+
+      <AnimatePresence>
+        {blocker.state === "blocked" && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="bg-white dark:bg-zinc-900 rounded-3xl p-6 max-w-sm w-full shadow-2xl space-y-6"
+            >
+              <div className="flex flex-col items-center text-center space-y-3">
+                <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 text-amber-500 rounded-full flex items-center justify-center">
+                  <AlertTriangle size={32} />
+                </div>
+                <h3 className="text-xl font-black uppercase tracking-tight">Unsaved Changes</h3>
+                <p className="text-sm text-slate-500 dark:text-zinc-400">
+                  You have unsaved changes. Are you sure you want to leave? Your changes will be lost.
+                </p>
+              </div>
+
+              <div className="grid gap-3">
+                <button
+                  onClick={() => blocker.proceed?.()}
+                  className="w-full py-3 bg-red-500 text-white rounded-xl font-bold text-sm shadow-lg shadow-red-500/20"
+                >
+                  Leave & Discard
+                </button>
+                <button
+                  onClick={() => blocker.reset?.()}
+                  className="w-full py-3 bg-slate-100 dark:bg-zinc-800 rounded-xl font-bold text-sm"
+                >
+                  Stay & Edit
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {showConflictModal && (

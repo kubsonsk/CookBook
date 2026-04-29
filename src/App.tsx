@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
-import { BrowserRouter as Router, Routes, Route, NavLink, useLocation } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Outlet, NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Home as HomeIcon, PlusCircle, Settings, ChefHat, LogOut, WifiOff } from 'lucide-react';
 import { cn } from './lib/utils';
@@ -89,12 +89,12 @@ function OfflineBanner() {
   );
 }
 
-function Layout({ children }: { children: React.ReactNode }) {
+function Layout() {
   const location = useLocation();
   const mainRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    if (mainRef.current) {
+    if (mainRef.current && location.pathname !== '/') {
       mainRef.current.scrollTo(0, 0);
     }
   }, [location.pathname]);
@@ -109,7 +109,7 @@ function Layout({ children }: { children: React.ReactNode }) {
     <div className="flex flex-col h-screen bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 font-sans transition-colors duration-300 overflow-hidden">
       <OfflineBanner />
       <main ref={mainRef} className="flex-1 w-full max-w-2xl mx-auto px-4 py-6 overflow-y-auto overflow-x-hidden pb-32">
-        {children}
+        <Outlet />
       </main>
 
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-lg border-t border-slate-200 dark:border-zinc-800 pb-safe">
@@ -157,6 +157,20 @@ function ThemeToggle() {
   );
 }
 
+const router = createBrowserRouter([
+  {
+    element: <Layout />,
+    children: [
+      { path: "/", element: <HomePage /> },
+      { path: "/recipe/:id", element: <RecipeDetailPage /> },
+      { path: "/add", element: <RecipeFormPage /> },
+      { path: "/edit/:id", element: <RecipeFormPage /> },
+      { path: "/settings", element: <SettingsPage /> },
+      { path: "/settings/labels", element: <LabelManagementPage /> },
+    ]
+  }
+]);
+
 export default function App() {
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     if (typeof window !== 'undefined') {
@@ -187,7 +201,6 @@ export default function App() {
       });
     } else {
       root.classList.remove('dark');
-      // Light mode content will be set by the accentColor useEffect
     }
   }, [theme]);
 
@@ -200,7 +213,6 @@ export default function App() {
       root.style.setProperty(`--primary-${shade}`, hex);
     });
     
-    // Update theme-color meta if light mode
     if (theme === 'light') {
       const metaThemeColors = document.querySelectorAll('meta[name="theme-color"]');
       metaThemeColors.forEach(meta => {
@@ -218,7 +230,6 @@ export default function App() {
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
-    console.log('Toggling theme to:', newTheme);
     setTheme(newTheme);
   };
 
@@ -240,19 +251,7 @@ export default function App() {
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme, accentColor, setAccentColor }}>
-      <Router>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/recipe/:id" element={<RecipeDetailPage />} />
-            <Route path="/add" element={<RecipeFormPage />} />
-            <Route path="/edit/:id" element={<RecipeFormPage />} />
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/settings/labels" element={<LabelManagementPage />} />
-
-          </Routes>
-        </Layout>
-      </Router>
+      <RouterProvider router={router} />
     </ThemeContext.Provider>
   );
 }
