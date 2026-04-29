@@ -22,14 +22,19 @@ export default function RecipeDetailPage() {
   useEffect(() => {
     if (!id) return;
     const fetchRecipe = async () => {
-      const docRef = doc(db, 'recipes', id);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        const data = docSnap.data() as Recipe;
-        setRecipe(data);
-        setServings(data.servings || 1);
+      try {
+        const docRef = doc(db, 'recipes', id);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data() as Recipe;
+          setRecipe(data);
+          setServings(data.servings || 1);
+        }
+      } catch (err) {
+        console.error('Error fetching recipe:', err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
     fetchRecipe();
   }, [id]);

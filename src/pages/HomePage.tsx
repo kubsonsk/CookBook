@@ -3,7 +3,7 @@ import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestor
 import { db, auth } from '../lib/firebase';
 import { Recipe, Label } from '../types';
 import { Link } from 'react-router-dom';
-import { Plus, ChefHat, LayoutGrid, List, Loader2, Search, Tag as TagIcon } from 'lucide-react';
+import { Plus, ChefHat, LayoutGrid, List, Loader2, Search, Tag as TagIcon, ArrowUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn, formatTime, getLocalStorageItem, setLocalStorageItem } from '../lib/utils';
 import { RecipeCard } from '../components/RecipeCard';
@@ -25,19 +25,48 @@ export default function HomePage() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
+  const scrollToTop = () => {
+    const mainElement = document.querySelector('main');
+    if (mainElement) {
+      mainElement.scrollTo({ top: 0, behavior: 'smooth' });
+      sessionStorage.setItem('homeScrollPos', '0');
+    }
+  };
+
   useEffect(() => {
+    const mainElement = document.querySelector('main');
     const handleScroll = (e: any) => {
+      // Only save if we are actually on the home page
+      if (window.location.pathname !== '/') return;
+      
       const scrollY = e.target.scrollTop;
       setIsScrolled(scrollY > 150);
+      // Save scroll position for Home page
+      sessionStorage.setItem('homeScrollPos', scrollY.toString());
     };
 
-    // The main scroll container is in App.tsx (main tag)
-    const mainElement = document.querySelector('main');
     if (mainElement) {
       mainElement.addEventListener('scroll', handleScroll);
     }
     return () => mainElement?.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Restore scroll position after loading recipes
+  useEffect(() => {
+    if (!loading) {
+      const savedPos = sessionStorage.getItem('homeScrollPos');
+      if (savedPos) {
+        const mainElement = document.querySelector('main');
+        if (mainElement) {
+          // Small delay to ensure browser has finished layout
+          const timeoutId = setTimeout(() => {
+            mainElement.scrollTo({ top: parseInt(savedPos), behavior: 'instant' });
+          }, 50);
+          return () => clearTimeout(timeoutId);
+        }
+      }
+    }
+  }, [loading]);
 
   useEffect(() => {
     if (!auth.currentUser) return;
@@ -216,32 +245,49 @@ export default function HomePage() {
         </AnimatePresence>
       </div>
 
-      {/* Floating Action Button (Search) */}
-      <AnimatePresence>
-        {isScrolled && !isSearchVisible && (
-          <motion.button
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0, opacity: 0 }}
-            onClick={() => {
-              setIsSearchVisible(true);
-              // Small delay to let the input mount before focus
-              setTimeout(() => {
-                document.querySelector('input')?.focus();
-              }, 100);
-            }}
-            className="fixed bottom-24 right-6 z-50 p-4 bg-primary-500 text-white rounded-full shadow-2xl shadow-primary-500/40 hover:scale-110 active:scale-95 transition-transform"
-            aria-label="Search recipes"
-          >
-            <Search size={24} />
-            {(searchTerm || selectedLabels.length > 0) && (
-              <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-white dark:border-zinc-950 flex items-center justify-center text-[8px] font-black">
-                !
-              </div>
-            )}
-          </motion.button>
-        )}
-      </AnimatePresence>
+      {/* Floating Action Buttons */}
+      <div className="fixed bottom-24 right-6 z-50 flex flex-col gap-3 items-center">
+        <AnimatePresence>
+          {isScrolled && (
+            <motion.button
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0, opacity: 0 }}
+              onClick={scrollToTop}
+              className="p-3 bg-white dark:bg-zinc-900 text-primary-500 rounded-full shadow-xl border border-slate-100 dark:border-zinc-800 hover:scale-110 active:scale-95 transition-transform"
+              aria-label="Scroll to top"
+            >
+              <ArrowUp size={20} />
+            </motion.button>
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {isScrolled && !isSearchVisible && (
+            <motion.button
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0, opacity: 0 }}
+              onClick={() => {
+                setIsSearchVisible(true);
+                // Small delay to let the input mount before focus
+                setTimeout(() => {
+                  document.querySelector('input')?.focus();
+                }, 100);
+              }}
+              className="p-4 bg-primary-500 text-white rounded-full shadow-2xl shadow-primary-500/40 hover:scale-110 active:scale-95 transition-transform relative"
+              aria-label="Search recipes"
+            >
+              <Search size={24} />
+              {(searchTerm || selectedLabels.length > 0) && (
+                <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-white dark:border-zinc-950 flex items-center justify-center text-[8px] font-black">
+                  !
+                </div>
+              )}
+            </motion.button>
+          )}
+        </AnimatePresence>
+      </div>
 
       <div className="grid gap-4">
         {loading ? (
