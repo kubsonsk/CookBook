@@ -2,12 +2,12 @@ import React, { useRef, useState } from 'react';
 import { useTheme } from '../lib/ThemeContext';
 import { signOut } from 'firebase/auth';
 import { auth, db } from '../lib/firebase';
-import { Moon, Sun, LogOut, ChevronRight, User, Info, Tag, Palette, FileUp, FileDown, Loader2, CheckCircle2, AlertCircle, Trash2, AlertTriangle } from 'lucide-react';
+import { Moon, Sun, LogOut, ChevronRight, User, Tag, Palette, FileUp, FileDown, Loader2, CheckCircle2, AlertCircle, Trash2, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ACCENT_COLORS, AccentColor } from '../lib/colors';
 import { cn } from '../lib/utils';
-import { collection, writeBatch, doc, serverTimestamp, query, where, getDocs, deleteDoc } from 'firebase/firestore';
+import { collection, writeBatch, doc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
 import { Recipe } from '../types';
 
 export default function SettingsPage() {
@@ -71,7 +71,7 @@ export default function SettingsPage() {
         const batch = writeBatch(db);
         const newLabels = new Set<string>();
 
-        recipes.forEach((r: any) => {
+        recipes.forEach((r: Partial<Recipe>) => {
           if (!r.title) return;
 
           const recipeRef = doc(collection(db, 'recipes'));
@@ -277,7 +277,7 @@ export default function SettingsPage() {
                     const recipes = snap.docs.map(d => {
                       const data = d.data();
                       // Remove internal fields for export
-                      const { ownerId, createdAt, updatedAt, rating, ...exportData } = data;
+                      const { ownerId: _ownerId, createdAt: _createdAt, updatedAt: _updatedAt, rating: _rating, ...exportData } = data;
                       return exportData;
                     });
                     

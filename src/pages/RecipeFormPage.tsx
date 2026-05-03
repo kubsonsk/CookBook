@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation, useBlocker } from 'react-router-dom';
-import { doc, getDoc, addDoc, updateDoc, collection, serverTimestamp, query, where, onSnapshot, orderBy, getDocFromServer } from 'firebase/firestore';
+import { doc, getDoc, addDoc, updateDoc, collection, serverTimestamp, query, where, onSnapshot, getDocFromServer } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { Recipe, Ingredient, Step, Label } from '../types';
 import { 
-  ArrowLeft, Plus, Trash2, Image as ImageIcon, Video, 
+  ArrowLeft, Plus, Image as ImageIcon, Video, 
   Sparkles, Loader2, Save, X, AlertTriangle, Tag, Search
 } from 'lucide-react';
 import { extractRecipeFromUrl } from '../lib/gemini';
@@ -20,6 +20,7 @@ export default function RecipeFormPage() {
   const sharedUrl = searchParams.get('url') || searchParams.get('text') || location.state?.importUrl || '';
 
   const [loading, setLoading] = useState(false);
+  const isSaving = React.useRef(false);
   const [magicLoading, setMagicLoading] = useState(false);
   const [magicUrl, setMagicUrl] = useState(sharedUrl);
   
@@ -32,12 +33,12 @@ export default function RecipeFormPage() {
 
   const blocker = useBlocker(
     ({ currentLocation, nextLocation }) =>
-      isDirty && currentLocation.pathname !== nextLocation.pathname && !loading
+      isDirty && currentLocation.pathname !== nextLocation.pathname && !loading && !isSaving.current
   );
 
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (isDirty && !loading) {
+      if (isDirty && !loading && !isSaving.current) {
         e.preventDefault();
         e.returnValue = '';
       }
@@ -55,7 +56,7 @@ export default function RecipeFormPage() {
     steps: [{ text: '' }],
   });
   
-  const [originalUpdatedAt, setOriginalUpdatedAt] = useState<any>(null);
+  const [originalUpdatedAt, setOriginalUpdatedAt] = useState<unknown>(null);
 
   useEffect(() => {
     if (!auth.currentUser) return;
@@ -120,10 +121,11 @@ export default function RecipeFormPage() {
     }
   };
 
-  const performSave = async (data: any) => {
+  const performSave = async (data: Partial<Recipe>) => {
+    isSaving.current = true;
     try {
       const savePromise = isEdit 
-        ? updateDoc(doc(db, 'recipes', id), data)
+        ? updateDoc(doc(db, 'recipes', id!), data)
         : addDoc(collection(db, 'recipes'), {
             ...data,
             createdAt: serverTimestamp(),
@@ -153,6 +155,7 @@ export default function RecipeFormPage() {
       }
     } finally {
       setLoading(false);
+      isSaving.current = false;
     }
   };
 
@@ -161,6 +164,7 @@ export default function RecipeFormPage() {
     if (!recipe.title || !auth.currentUser) return;
 
     setLoading(true);
+    isSaving.current = true;
     const recipeData = {
       ...recipe,
       ownerId: auth.currentUser.uid,
@@ -169,15 +173,16 @@ export default function RecipeFormPage() {
 
     if (isEdit && navigator.onLine) {
       try {
-        const docRef = doc(db, 'recipes', id);
+        const docRef = doc(db, 'recipes', id!);
         const serverSnap = await getDocFromServer(docRef);
         if (serverSnap.exists()) {
           const serverData = serverSnap.data() as Recipe;
           // Compare updatedAt. If server has a newer version than what we started with
-          if (originalUpdatedAt && serverData.updatedAt && serverData.updatedAt.toMillis() > originalUpdatedAt.toMillis()) {
+          if (originalUpdatedAt && serverData.updatedAt && (serverData.updatedAt as { toMillis: () => number }).toMillis() > (originalUpdatedAt as { toMillis: () => number }).toMillis()) {
             setServerVersion(serverData);
             setShowConflictModal(true);
             setLoading(false);
+            isSaving.current = false;
             return;
           }
         }
@@ -197,6 +202,7 @@ export default function RecipeFormPage() {
     } else {
       // Use local version (overwrite server)
       setLoading(true);
+      isSaving.current = true;
       const recipeData = {
         ...recipe,
         ownerId: auth.currentUser?.uid,
@@ -224,9 +230,9 @@ export default function RecipeFormPage() {
     setIsDirty(true);
   };
 
-  const updateIngredient = (index: number, field: keyof Ingredient, value: any) => {
+  const updateIngredient = (index: number, field: keyof Ingredient, value: string | number) => {
     const newIngs = [...(recipe.ingredients || [])];
-    newIngs[index] = { ...newIngs[index], [field]: value };
+    newIngs[index] = { ...newIngs[index], [field]: value } as Ingredient;
     setRecipe({ ...recipe, ingredients: newIngs });
     setIsDirty(true);
   };
@@ -247,9 +253,9 @@ export default function RecipeFormPage() {
     setIsDirty(true);
   };
 
-  const updateStep = (index: number, field: keyof Step, value: any) => {
+  const updateStep = (index: number, field: keyof Step, value: string) => {
     const newSteps = [...(recipe.steps || [])];
-    newSteps[index] = { ...newSteps[index], [field]: value };
+    newSteps[index] = { ...newSteps[index], [field]: value } as Step;
     setRecipe({ ...recipe, steps: newSteps });
     setIsDirty(true);
   };

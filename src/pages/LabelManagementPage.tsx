@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, where, onSnapshot, addDoc, deleteDoc, doc, serverTimestamp, orderBy } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, addDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { Label } from '../types';
-import { ArrowLeft, Plus, Trash2, Tag, Loader2, X } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Tag, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 

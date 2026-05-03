@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence, useAnimation, useMotionValue, useTransform } from 'framer-motion';
+import { motion, AnimatePresence, useAnimation, useMotionValue, useTransform, PanInfo } from 'framer-motion';
 import { ChefHat, Clock, Tag, Edit2, Trash2, AlertTriangle, Loader2 } from 'lucide-react';
 import { Recipe } from '../types';
-import { formatTime, cn } from '../lib/utils';
+import { formatTime } from '../lib/utils';
 import { deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
@@ -12,7 +12,7 @@ interface RecipeListItemProps {
   index: number;
 }
 
-export const RecipeListItem: React.FC<RecipeListItemProps> = ({ recipe, index }) => {
+export const RecipeListItem: React.FC<RecipeListItemProps> = ({ recipe, index: _index }) => {
   const navigate = useNavigate();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -33,7 +33,7 @@ export const RecipeListItem: React.FC<RecipeListItemProps> = ({ recipe, index })
   const editOpacity = useTransform(x, [0, 40], [0, 1]);
   const deleteOpacity = useTransform(x, [-40, 0], [1, 0]);
 
-  const handleDragEnd = (_: any, info: any) => {
+  const handleDragEnd = (_: unknown, info: PanInfo) => {
     const { offset, velocity } = info;
     
     // Thresholds
@@ -182,7 +182,7 @@ export const RecipeListItem: React.FC<RecipeListItemProps> = ({ recipe, index })
                 </div>
                 <h3 className="text-xl font-black uppercase tracking-tight text-red-600">Delete Recipe</h3>
                 <p className="text-sm text-slate-500 dark:text-zinc-400">
-                  Are you sure you want to delete <span className="font-bold text-slate-900 dark:text-white">"{recipe.title}"</span>? This action cannot be undone.
+                  Are you sure you want to delete <span className="font-bold text-slate-900 dark:text-white">&quot;{recipe.title}&quot;</span>? This action cannot be undone.
                 </p>
               </div>
 

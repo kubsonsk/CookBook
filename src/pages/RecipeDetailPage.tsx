@@ -5,10 +5,10 @@ import { db } from '../lib/firebase';
 import { Recipe } from '../types';
 import { 
   ArrowLeft, Clock, Users, Edit, Trash2, 
-  Share2, Play, ChevronRight, CheckCircle2, ListChecks, Tag
+  Play, CheckCircle2, ListChecks, Tag
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { cn, formatTime } from '../lib/utils';
+import { formatTime } from '../lib/utils';
 import confetti from 'canvas-confetti';
 
 export default function RecipeDetailPage() {
@@ -243,7 +243,7 @@ export default function RecipeDetailPage() {
           className="w-full py-4 bg-primary-500 text-white rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-primary-500/20 active:scale-95 transition-all flex items-center justify-center gap-2"
         >
           <CheckCircle2 size={24} />
-          I'm done cooking!
+          I&apos;m done cooking!
         </button>
       </div>
     </motion.div>

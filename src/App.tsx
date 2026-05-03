@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { createBrowserRouter, RouterProvider, Outlet, NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home as HomeIcon, PlusCircle, Settings, ChefHat, LogOut, WifiOff } from 'lucide-react';
+import { Home as HomeIcon, PlusCircle, Settings, ChefHat, WifiOff } from 'lucide-react';
 import { cn } from './lib/utils';
 import HomePage from './pages/HomePage';
 import RecipeDetailPage from './pages/RecipeDetailPage';
@@ -10,10 +10,10 @@ import SettingsPage from './pages/SettingsPage';
 import LabelManagementPage from './pages/LabelManagementPage';
 
 import { auth } from './lib/firebase';
-import { onAuthStateChanged, User, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
+import { onAuthStateChanged, User, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { useOnlineStatus } from './lib/hooks';
 import { AccentColor, ACCENT_COLORS } from './lib/colors';
-import { ThemeContext, useTheme } from './lib/ThemeContext';
+import { ThemeContext } from './lib/ThemeContext';
 
 function LoginPage() {
   const [loading, setLoading] = useState(false);
@@ -142,18 +142,6 @@ function Layout() {
         </div>
       </nav>
     </div>
-  );
-}
-
-function ThemeToggle() {
-  const { theme, toggleTheme } = useTheme();
-  return (
-    <button
-      onClick={toggleTheme}
-      className="p-2 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 hover:bg-slate-200 dark:hover:bg-zinc-700 transition-colors"
-    >
-      {theme === 'light' ? '🌙' : '☀️'}
-    </button>
   );
 }
 

@@ -3,9 +3,9 @@ import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestor
 import { db, auth } from '../lib/firebase';
 import { Recipe, Label } from '../types';
 import { Link } from 'react-router-dom';
-import { Plus, ChefHat, LayoutGrid, List, Loader2, Search, Tag as TagIcon, ArrowUp } from 'lucide-react';
+import { Plus, LayoutGrid, List, Loader2, Search, Tag as TagIcon, ArrowUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { cn, formatTime, getLocalStorageItem, setLocalStorageItem } from '../lib/utils';
+import { cn, getLocalStorageItem, setLocalStorageItem } from '../lib/utils';
 import { RecipeCard } from '../components/RecipeCard';
 import { RecipeListItem } from '../components/RecipeListItem';
 import { useOnlineStatus } from '../lib/hooks';
@@ -35,11 +35,12 @@ export default function HomePage() {
 
   useEffect(() => {
     const mainElement = document.querySelector('main');
-    const handleScroll = (e: any) => {
+    const handleScroll = (e: Event) => {
       // Only save if we are actually on the home page
       if (window.location.pathname !== '/') return;
       
-      const scrollY = e.target.scrollTop;
+      const target = e.target as HTMLElement;
+      const scrollY = target.scrollTop;
       setIsScrolled(scrollY > 150);
       // Save scroll position for Home page
       sessionStorage.setItem('homeScrollPos', scrollY.toString());
