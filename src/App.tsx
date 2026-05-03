@@ -10,22 +10,37 @@ import SettingsPage from './pages/SettingsPage';
 import LabelManagementPage from './pages/LabelManagementPage';
 
 import { auth } from './lib/firebase';
-import { onAuthStateChanged, User, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { onAuthStateChanged, User, signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword } from 'firebase/auth';
 import { useOnlineStatus } from './lib/hooks';
 import { AccentColor, ACCENT_COLORS } from './lib/colors';
 import { ThemeContext } from './lib/ThemeContext';
 
 function LoginPage() {
   const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
-  const handleLogin = async () => {
+  const handleGoogleLogin = async () => {
     setLoading(true);
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
     } catch (error) {
-      console.error("Login error", error);
-      alert("Failed to sign in. Please try again.");
+      console.error("Google Login error", error);
+      alert("Failed to sign in with Google. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEmailLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (error) {
+      console.error("Email Login error", error);
+      alert("Failed to sign in. Check your credentials.");
     } finally {
       setLoading(false);
     }
@@ -46,19 +61,48 @@ function LoginPage() {
           <p className="text-slate-500 dark:text-zinc-400 font-medium">Your personal AI-powered digital recipe box.</p>
         </div>
 
+        <form onSubmit={handleEmailLogin} className="space-y-4">
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full p-4 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl"
+            required
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full p-4 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl"
+            required
+          />
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-4 bg-primary-500 text-white rounded-2xl font-bold hover:opacity-90 transition-all active:scale-95 disabled:opacity-50"
+          >
+            {loading ? 'Signing in...' : 'Sign In with Email'}
+          </button>
+        </form>
+
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-slate-200 dark:border-zinc-800"></div>
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-slate-50 dark:bg-zinc-950 px-2 text-slate-400">Or</span>
+          </div>
+        </div>
+
         <button
-          onClick={handleLogin}
+          onClick={handleGoogleLogin}
           disabled={loading}
           className="w-full py-4 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-2xl font-bold flex items-center justify-center gap-3 shadow-sm hover:shadow-md transition-all active:scale-95 disabled:opacity-50"
         >
-          {loading ? (
-            <div className="w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
-          ) : (
-            <>
-              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/pwa_site/google.svg" className="w-5 h-5" alt="Google" referrerPolicy="no-referrer" />
-              Sign in with Google
-            </>
-          )}
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/pwa_site/google.svg" className="w-5 h-5" alt="Google" referrerPolicy="no-referrer" />
+          Sign in with Google
         </button>
         
         <p className="text-[10px] uppercase tracking-widest font-black text-slate-400">Secure Cloud Storage Included</p>
