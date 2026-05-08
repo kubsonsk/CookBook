@@ -133,7 +133,7 @@ export const translations = {
   },
   sk: {
     // App/Layout
-    app_title: "Kuchárka",
+    app_title: "CookBook",
     app_subtitle: "Váš osobný digitálny receptár s AI.",
     secure_storage: "Bezpečné cloudové úložisko v cene",
     offline_mode: "Režim offline je aktívny",
