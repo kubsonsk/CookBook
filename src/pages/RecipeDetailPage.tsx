@@ -64,10 +64,12 @@ export default function RecipeDetailPage() {
       } catch (err) {
         console.error('Error sharing', err);
       }
-    } else {
+    } else if (navigator.clipboard && navigator.clipboard.writeText) {
       // Fallback: Copy to clipboard
       await navigator.clipboard.writeText(shareData.text);
       alert('Ingredients list copied to clipboard! You can paste it into your Reminders app.');
+    } else {
+      alert('Your browser does not support sharing or copying ingredients to the clipboard.');
     }
   };
 
