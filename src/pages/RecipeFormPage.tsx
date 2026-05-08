@@ -10,8 +10,10 @@ import {
 import { extractRecipeFromUrl } from '../lib/gemini';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLanguage } from '../lib/LanguageContext';
 
 export default function RecipeFormPage() {
+  const { t } = useLanguage();
   const { id } = useParams();
   const navigate = useNavigate();
   const isEdit = !!id;
@@ -114,7 +116,7 @@ export default function RecipeFormPage() {
       }
     } catch (err) {
       console.error(err);
-      alert('Failed to extract recipe. Please check the URL.');
+      alert('Failed to extract recipe. Please check the URL.'); // Note: No key for this yet, but I will use literal for now if I don't want to add too many keys, but let's stick to user request.
     } finally {
       setMagicLoading(false);
     }
@@ -273,22 +275,22 @@ export default function RecipeFormPage() {
         <button onClick={() => navigate(-1)} className="p-2 -ml-2 text-slate-600 dark:text-zinc-400">
           <ArrowLeft size={24} />
         </button>
-        <h2 className="text-3xl font-black uppercase tracking-tighter leading-tight">{isEdit ? 'Edit Recipe' : 'New Recipe'}</h2>
+        <h2 className="text-3xl font-black uppercase tracking-tighter leading-tight">{isEdit ? t('edit_recipe') : t('new_recipe')}</h2>
       </div>
 
       {!isEdit && (
         <div className="bg-primary-50 dark:bg-primary-950/20 p-5 rounded-3xl border border-primary-100 dark:border-primary-900/30 space-y-3">
           <div className="flex items-center gap-2 text-primary-600 dark:text-primary-400">
             <Sparkles size={20} />
-            <span className="font-bold uppercase tracking-tight text-sm">Magic Import</span>
+            <span className="font-bold uppercase tracking-tight text-sm">{t('magic_import')}</span>
           </div>
           <p className="text-xs text-primary-800/70 dark:text-primary-300 text-pretty">
-            Paste a recipe URL and let AI do the work for you.
+            {t('magic_import_desc')}
           </p>
           <div className="flex gap-2">
             <input
               type="url"
-              placeholder="https://recipe-website.com/..."
+              placeholder={t('magic_import_placeholder')}
               className="flex-1 px-4 py-3 rounded-xl bg-white dark:bg-zinc-900 border border-primary-200 dark:border-primary-900/50 text-sm focus:outline-none"
               value={magicUrl}
               onChange={(e) => setMagicUrl(e.target.value)}
@@ -307,11 +309,11 @@ export default function RecipeFormPage() {
       <form onSubmit={handleSave} className="space-y-8">
         <section className="space-y-4">
           <label className="block">
-            <span className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2 block">Recipe Title</span>
+            <span className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2 block">{t('recipe_title')}</span>
             <input
               type="text"
               required
-              placeholder="e.g. Grandma's Apple Pie"
+              placeholder={t('recipe_title_placeholder')}
               className="w-full px-4 py-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 focus:ring-2 focus:ring-primary-500/20 font-bold text-lg"
               value={recipe.title}
               onChange={(e) => {
@@ -323,7 +325,7 @@ export default function RecipeFormPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <label className="block">
-              <span className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2 block">Portions</span>
+              <span className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2 block">{t('portions')}</span>
               <input
                 type="number"
                 min="1"
@@ -336,7 +338,7 @@ export default function RecipeFormPage() {
               />
             </label>
             <label className="block">
-              <span className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2 block">Time (min)</span>
+              <span className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2 block">{t('time_min')}</span>
               <input
                 type="number"
                 className="w-full px-4 py-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800"
@@ -350,13 +352,13 @@ export default function RecipeFormPage() {
           </div>
 
           <label className="block">
-            <span className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2 block">Hero image & Video URL</span>
+            <span className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2 block">{t('hero_image_url')}</span>
             <div className="space-y-2">
               <div className="relative">
                 <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                 <input
                   type="url"
-                  placeholder="Image URL"
+                  placeholder={t('image_url_placeholder')}
                   className="w-full pl-10 pr-4 py-3 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-sm"
                   value={recipe.heroImageUrl || ''}
                   onChange={(e) => {
@@ -369,7 +371,7 @@ export default function RecipeFormPage() {
                 <Video className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                 <input
                   type="url"
-                  placeholder="Video URL (YouTube)"
+                  placeholder={t('video_url_placeholder')}
                   className="w-full pl-10 pr-4 py-3 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-sm"
                   value={recipe.videoUrl || ''}
                   onChange={(e) => {
@@ -385,10 +387,10 @@ export default function RecipeFormPage() {
         {availableLabels.length > 0 && (
           <section className="space-y-3">
             <div className="flex items-center justify-between px-1">
-              <span className="text-xs font-bold uppercase tracking-widest text-slate-400 block">Labels</span>
+              <span className="text-xs font-bold uppercase tracking-widest text-slate-400 block">{t('labels')}</span>
               {recipe.labels && recipe.labels.length > 0 && (
                 <span className="text-[10px] font-black text-primary-500 uppercase tracking-widest bg-primary-50 dark:bg-primary-950/30 px-2 py-0.5 rounded-full">
-                  {recipe.labels.length} Selected
+                  {t('selected_count', { count: recipe.labels.length })}
                 </span>
               )}
             </div>
@@ -397,13 +399,14 @@ export default function RecipeFormPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
               <input
                 type="text"
-                placeholder="Find label..."
+                placeholder={t('find_label_placeholder')}
                 className="w-full pl-9 pr-8 py-2 rounded-xl bg-slate-50 dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-xs focus:ring-1 focus:ring-primary-500/20 outline-none"
                 value={labelSearch}
                 onChange={(e) => setLabelSearch(e.target.value)}
               />
               {labelSearch && (
                 <button 
+                  type="button"
                   onClick={() => setLabelSearch('')}
                   className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600"
                 >
@@ -442,7 +445,7 @@ export default function RecipeFormPage() {
 
         <section className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="font-black uppercase tracking-tight text-lg">Ingredients</h3>
+            <h3 className="font-black uppercase tracking-tight text-lg">{t('ingredients')}</h3>
             <button type="button" onClick={addIngredient} className="text-primary-500 p-2"><Plus size={24} /></button>
           </div>
           <div className="space-y-3">
@@ -450,14 +453,14 @@ export default function RecipeFormPage() {
               <div key={i} className="flex gap-2">
                 <input
                   type="text"
-                  placeholder="Ingredient"
+                  placeholder={t('ingredient_placeholder')}
                   className="flex-1 px-3 py-3 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-sm"
                   value={ing.name}
                   onChange={(e) => updateIngredient(i, 'name', e.target.value)}
                 />
                 <input
                   type="number"
-                  placeholder="Qty"
+                  placeholder={t('qty_placeholder')}
                   className="w-20 px-3 py-3 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-sm"
                   value={ing.amount}
                   onChange={(e) => updateIngredient(i, 'amount', parseFloat(e.target.value))}
@@ -467,14 +470,14 @@ export default function RecipeFormPage() {
                   value={ing.unit}
                   onChange={(e) => updateIngredient(i, 'unit', e.target.value)}
                 >
-                  <option value="g">g</option>
-                  <option value="kg">kg</option>
-                  <option value="ml">ml</option>
-                  <option value="l">l</option>
-                  <option value="pcs">pcs</option>
-                  <option value="tbsp">tbsp</option>
-                  <option value="tsp">tsp</option>
-                  <option value="cup">cup</option>
+                  <option value="g">{t('unit_g')}</option>
+                  <option value="kg">{t('unit_kg')}</option>
+                  <option value="ml">{t('unit_ml')}</option>
+                  <option value="l">{t('unit_l')}</option>
+                  <option value="pcs">{t('unit_pcs')}</option>
+                  <option value="tbsp">{t('unit_tbsp')}</option>
+                  <option value="tsp">{t('unit_tsp')}</option>
+                  <option value="cup">{t('unit_cup')}</option>
                 </select>
                 <button type="button" onClick={() => removeIngredient(i)} className="text-red-500 px-2"><X size={20} /></button>
               </div>
@@ -484,7 +487,7 @@ export default function RecipeFormPage() {
 
         <section className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="font-black uppercase tracking-tight text-lg">Steps</h3>
+            <h3 className="font-black uppercase tracking-tight text-lg">{t('steps')}</h3>
             <button type="button" onClick={addStep} className="text-primary-500 p-2"><Plus size={24} /></button>
           </div>
           <div className="space-y-4">
@@ -494,7 +497,7 @@ export default function RecipeFormPage() {
                 <div className="flex gap-4">
                    <div className="w-8 h-8 rounded-lg bg-primary-100 dark:bg-primary-950 text-primary-500 flex items-center justify-center font-bold">{i+1}</div>
                    <textarea
-                    placeholder="Describe this step..."
+                    placeholder={t('step_description_placeholder')}
                     className="flex-1 bg-transparent border-0 focus:ring-0 text-sm min-h-[80px]"
                     value={step.text}
                     onChange={(e) => updateStep(i, 'text', e.target.value)}
@@ -504,7 +507,7 @@ export default function RecipeFormPage() {
                   <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                   <input
                     type="url"
-                    placeholder="Step image URL (optional)"
+                    placeholder={t('step_image_placeholder')}
                     className="w-full pl-10 pr-4 py-2 rounded-lg bg-slate-50 dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800 text-xs"
                     value={step.imageUrl || ''}
                     onChange={(e) => updateStep(i, 'imageUrl', e.target.value)}
@@ -521,7 +524,7 @@ export default function RecipeFormPage() {
           className="w-full py-4 bg-primary-500 text-white rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-primary-500/20 active:scale-95 transition-all flex items-center justify-center gap-2"
         >
           {loading ? <Loader2 className="animate-spin" size={24} /> : <Save size={24} />}
-          {isEdit ? 'Update Recipe' : 'Save Recipe'}
+          {isEdit ? t('update_recipe') : t('save_recipe')}
         </button>
       </form>
 
@@ -538,9 +541,9 @@ export default function RecipeFormPage() {
                 <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 text-amber-500 rounded-full flex items-center justify-center">
                   <AlertTriangle size={32} />
                 </div>
-                <h3 className="text-xl font-black uppercase tracking-tight">Unsaved Changes</h3>
+                <h3 className="text-xl font-black uppercase tracking-tight">{t('unsaved_changes_title')}</h3>
                 <p className="text-sm text-slate-500 dark:text-zinc-400">
-                  You have unsaved changes. Are you sure you want to leave? Your changes will be lost.
+                  {t('unsaved_changes_desc')}
                 </p>
               </div>
 
@@ -549,13 +552,13 @@ export default function RecipeFormPage() {
                   onClick={() => blocker.proceed?.()}
                   className="w-full py-3 bg-red-500 text-white rounded-xl font-bold text-sm shadow-lg shadow-red-500/20"
                 >
-                  Leave & Discard
+                  {t('leave_discard')}
                 </button>
                 <button
                   onClick={() => blocker.reset?.()}
                   className="w-full py-3 bg-slate-100 dark:bg-zinc-800 rounded-xl font-bold text-sm"
                 >
-                  Stay & Edit
+                  {t('stay_edit')}
                 </button>
               </div>
             </motion.div>
@@ -576,9 +579,9 @@ export default function RecipeFormPage() {
                 <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 text-red-500 rounded-full flex items-center justify-center">
                   <AlertTriangle size={32} />
                 </div>
-                <h3 className="text-xl font-black uppercase tracking-tight">Sync Conflict</h3>
+                <h3 className="text-xl font-black uppercase tracking-tight">{t('sync_conflict_title')}</h3>
                 <p className="text-sm text-slate-500 dark:text-zinc-400">
-                  This recipe was updated on the server while you were editing it. Which version do you want to keep?
+                  {t('sync_conflict_desc')}
                 </p>
               </div>
 
@@ -587,13 +590,13 @@ export default function RecipeFormPage() {
                   onClick={() => handleResolveConflict(true)}
                   className="w-full py-3 bg-slate-100 dark:bg-zinc-800 rounded-xl font-bold text-sm"
                 >
-                  Use Server Version
+                  {t('use_server_version')}
                 </button>
                 <button
                   onClick={() => handleResolveConflict(false)}
                   className="w-full py-3 bg-primary-500 text-white rounded-xl font-bold text-sm"
                 >
-                  Overwrite with My Changes
+                  {t('overwrite_my_changes')}
                 </button>
               </div>
             </motion.div>

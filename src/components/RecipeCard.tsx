@@ -6,6 +6,7 @@ import { Recipe } from '../types';
 import { formatTime, cn } from '../lib/utils';
 import { deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import { useLanguage } from '../lib/LanguageContext';
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -13,6 +14,7 @@ interface RecipeCardProps {
 }
 
 export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, index }) => {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -64,7 +66,7 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, index }) => {
     } catch (error) {
       console.error("Error deleting recipe:", error);
       if (isMounted.current) {
-        alert("Failed to delete recipe.");
+        alert(t('failed_delete_recipe'));
       }
     } finally {
       if (isMounted.current) {
@@ -87,7 +89,7 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, index }) => {
           >
             <div className="flex flex-col items-center justify-center text-white">
               <Edit2 size={32} />
-              <span className="text-xs font-black uppercase mt-2">Edit</span>
+              <span className="text-xs font-black uppercase mt-2">{t('edit')}</span>
             </div>
           </motion.button>
 
@@ -98,7 +100,7 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, index }) => {
           >
             <div className="flex flex-col items-center justify-center text-white">
               <Trash2 size={32} />
-              <span className="text-xs font-black uppercase mt-2">Delete</span>
+              <span className="text-xs font-black uppercase mt-2">{t('delete')}</span>
             </div>
           </motion.button>
         </div>
@@ -172,9 +174,9 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, index }) => {
                 <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 text-red-500 rounded-full flex items-center justify-center">
                   <AlertTriangle size={32} />
                 </div>
-                <h3 className="text-xl font-black uppercase tracking-tight text-red-600">Delete Recipe</h3>
+                <h3 className="text-xl font-black uppercase tracking-tight text-red-600">{t('delete_recipe')}</h3>
                 <p className="text-sm text-slate-500 dark:text-zinc-400">
-                  Are you sure you want to delete <span className="font-bold text-slate-900 dark:text-white">"{recipe.title}"</span>?
+                  {t('delete_confirm_title')} <span className="font-bold text-slate-900 dark:text-white">"{recipe.title}"</span>?
                 </p>
               </div>
 
@@ -185,7 +187,7 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, index }) => {
                   className="w-full py-4 bg-red-500 text-white rounded-2xl font-bold text-sm flex items-center justify-center gap-2"
                 >
                   {isDeleting ? <Loader2 className="animate-spin" size={18} /> : <Trash2 size={18} />}
-                  Delete Recipe
+                  {t('delete_recipe')}
                 </button>
                 <button
                   disabled={isDeleting}
@@ -195,7 +197,7 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({ recipe, index }) => {
                   }}
                   className="w-full py-4 bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 rounded-2xl font-bold text-sm"
                 >
-                  Cancel
+                  {t('cancel')}
                 </button>
               </div>
             </motion.div>
