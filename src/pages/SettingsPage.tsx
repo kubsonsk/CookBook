@@ -1,8 +1,9 @@
 import React, { useRef, useState } from 'react';
 import { useTheme } from '../lib/ThemeContext';
+import { useLanguage } from '../lib/LanguageContext';
 import { signOut } from 'firebase/auth';
 import { auth, db } from '../lib/firebase';
-import { Moon, Sun, LogOut, ChevronRight, User, Info, Tag, Palette, FileUp, FileDown, Loader2, CheckCircle2, AlertCircle, Trash2, AlertTriangle } from 'lucide-react';
+import { Moon, Sun, LogOut, ChevronRight, User, Info, Tag, Palette, FileUp, FileDown, Loader2, CheckCircle2, AlertCircle, Trash2, AlertTriangle, Languages } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ACCENT_COLORS, AccentColor } from '../lib/colors';
@@ -12,6 +13,7 @@ import { Recipe } from '../types';
 
 export default function SettingsPage() {
   const { theme, toggleTheme, accentColor, setAccentColor } = useTheme();
+  const { language, setLanguage, t } = useLanguage();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [importStatus, setImportStatus] = useState<'idle' | 'importing' | 'success' | 'error'>('idle');
   const [importMessage, setImportMessage] = useState('');
@@ -39,10 +41,10 @@ export default function SettingsPage() {
       
       await batch.commit();
       setShowWipeModal(false);
-      alert(`Successfully wiped ${snap.docs.length} recipes.`);
+      alert(t('wipe_success', { count: snap.docs.length }));
     } catch (err) {
       console.error('Wipe error:', err);
-      alert('Failed to wipe recipes.');
+      alert(t('wipe_error'));
     } finally {
       setIsWiping(false);
     }
@@ -53,7 +55,7 @@ export default function SettingsPage() {
     if (!file || !user) return;
 
     setImportStatus('importing');
-    setImportMessage('Reading file...');
+    setImportMessage(t('import_reading'));
 
     const reader = new FileReader();
     reader.onload = async (event) => {
@@ -61,7 +63,7 @@ export default function SettingsPage() {
         const json = JSON.parse(event.target?.result as string);
         const recipes = Array.isArray(json) ? json : [json];
 
-        setImportMessage(`Importing ${recipes.length} recipes...`);
+        setImportMessage(t('importing_count', { count: recipes.length }));
 
         // Get existing labels to avoid duplicates
         const labelsQuery = query(collection(db, 'labels'), where('ownerId', '==', user.uid));
@@ -112,13 +114,13 @@ export default function SettingsPage() {
 
         await batch.commit();
         setImportStatus('success');
-        setImportMessage(`Successfully imported ${recipes.length} recipes.`);
+        setImportMessage(t('import_success', { count: recipes.length }));
         
         setTimeout(() => setImportStatus('idle'), 3000);
       } catch (err) {
         console.error('Import error:', err);
         setImportStatus('error');
-        setImportMessage('Failed to parse or import JSON. Check file format.');
+        setImportMessage(t('import_error'));
       }
     };
     reader.readAsText(file);
@@ -134,12 +136,12 @@ export default function SettingsPage() {
       className="space-y-8 pb-12"
     >
       <div className="space-y-2">
-        <h2 className="text-3xl font-black uppercase tracking-tighter leading-tight">Settings</h2>
-        <p className="text-slate-400 dark:text-zinc-500 text-sm">Personalize your cooking experience.</p>
+        <h2 className="text-3xl font-black uppercase tracking-tighter leading-tight">{t('settings')}</h2>
+        <p className="text-slate-400 dark:text-zinc-500 text-sm">{t('personalize_experience')}</p>
       </div>
 
       <section className="space-y-4">
-        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-zinc-500 ml-4">Account</h3>
+        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-zinc-500 ml-4">{t('account')}</h3>
         <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-slate-100 dark:border-zinc-800 overflow-hidden shadow-sm">
           <div className="flex items-center gap-4 p-4 border-b border-slate-50 dark:border-zinc-800/50">
             <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-primary-500 flex-shrink-0 bg-slate-100 dark:bg-zinc-800 flex items-center justify-center transition-colors duration-500">
@@ -150,7 +152,7 @@ export default function SettingsPage() {
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-bold truncate">{user?.displayName || 'Chef'}</p>
+              <p className="font-bold truncate">{user?.displayName || t('chef')}</p>
               <p className="text-xs text-slate-400 truncate">{user?.email}</p>
             </div>
           </div>
@@ -161,7 +163,7 @@ export default function SettingsPage() {
           >
             <div className="flex items-center gap-3 text-red-500">
               <LogOut size={20} />
-              <span className="font-bold">Sign Out</span>
+              <span className="font-bold">{t('sign_out')}</span>
             </div>
             <ChevronRight size={18} className="text-slate-300 group-hover:text-red-300 transition-colors" />
           </button>
@@ -169,7 +171,7 @@ export default function SettingsPage() {
       </section>
 
       <section className="space-y-4">
-        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-zinc-500 ml-4">Appearance</h3>
+        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-zinc-500 ml-4">{t('appearance')}</h3>
         <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-slate-100 dark:border-zinc-800 overflow-hidden shadow-sm divide-y divide-slate-50 dark:divide-zinc-800/50">
           <button 
             onClick={toggleTheme}
@@ -177,7 +179,7 @@ export default function SettingsPage() {
           >
             <div className="flex items-center gap-3">
               {theme === 'light' ? <Sun size={20} className="text-amber-500" /> : <Moon size={20} className="text-slate-400" />}
-              <span className="font-bold">{theme === 'light' ? 'Light Appearance' : 'Dark Appearance'}</span>
+              <span className="font-bold">{theme === 'light' ? t('light_appearance') : t('dark_appearance')}</span>
             </div>
             <div className={
               `w-12 h-6 rounded-full p-1 transition-colors duration-300 ${theme === 'dark' ? 'bg-primary-500' : 'bg-slate-200'}`
@@ -193,7 +195,7 @@ export default function SettingsPage() {
           <div className="p-4 space-y-4">
             <div className="flex items-center gap-3">
               <Palette size={20} className="text-primary-500 transition-colors duration-500" />
-              <span className="font-bold">Accent Color</span>
+              <span className="font-bold">{t('accent_color')}</span>
             </div>
             <div className="flex flex-wrap gap-3">
               {(Object.keys(ACCENT_COLORS) as AccentColor[]).map((color) => (
@@ -219,11 +221,37 @@ export default function SettingsPage() {
               ))}
             </div>
           </div>
+
+          <div className="p-4 space-y-4">
+            <div className="flex items-center gap-3">
+              <Languages size={20} className="text-primary-500" />
+              <span className="font-bold">{t('language')}</span>
+            </div>
+            <div className="flex gap-2">
+              {[
+                { code: 'en', label: t('english') },
+                { code: 'sk', label: t('slovak') }
+              ].map((lang) => (
+                <button
+                  key={lang.code}
+                  onClick={() => setLanguage(lang.code as any)}
+                  className={cn(
+                    "flex-1 py-2 px-4 rounded-xl font-bold text-xs uppercase tracking-widest transition-all",
+                    language === lang.code 
+                      ? "bg-primary-500 text-white shadow-lg shadow-primary-500/25" 
+                      : "bg-slate-100 dark:bg-zinc-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-zinc-700"
+                  )}
+                >
+                  {lang.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
       <section className="space-y-4">
-        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-zinc-500 ml-4">Organization</h3>
+        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-zinc-500 ml-4">{t('organization')}</h3>
         <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-slate-100 dark:border-zinc-800 overflow-hidden shadow-sm">
           <Link 
             to="/settings/labels"
@@ -231,7 +259,7 @@ export default function SettingsPage() {
           >
             <div className="flex items-center gap-3">
               <Tag size={20} className="text-primary-500" />
-              <span className="font-bold">Manage Labels</span>
+              <span className="font-bold">{t('manage_labels')}</span>
             </div>
             <ChevronRight size={18} className="text-slate-300 group-hover:translate-x-1 transition-transform" />
           </Link>
@@ -239,13 +267,13 @@ export default function SettingsPage() {
       </section>
 
       <section className="space-y-4">
-        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-zinc-500 ml-4">Data & Backup</h3>
+        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-zinc-500 ml-4">{t('data_backup')}</h3>
         <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-slate-100 dark:border-zinc-800 overflow-hidden shadow-sm divide-y divide-slate-50 dark:divide-zinc-800/50">
           <div className="p-4 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <FileUp size={20} className="text-primary-500" />
-                <span className="font-bold">Bulk Import</span>
+                <span className="font-bold">{t('bulk_import')}</span>
               </div>
               <input 
                 type="file" 
@@ -259,14 +287,14 @@ export default function SettingsPage() {
                 onClick={handleImportClick}
                 className="px-4 py-2 bg-primary-100 dark:bg-primary-950/30 text-primary-600 dark:text-primary-400 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-primary-200 dark:hover:bg-primary-900/50 transition-colors disabled:opacity-50"
               >
-                Choose JSON
+                {t('choose_json')}
               </button>
             </div>
 
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <FileDown size={20} className="text-primary-500" />
-                <span className="font-bold">Bulk Export</span>
+                <span className="font-bold">{t('bulk_export')}</span>
               </div>
               <button
                 onClick={async () => {
@@ -295,7 +323,7 @@ export default function SettingsPage() {
                 }}
                 className="px-4 py-2 bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 rounded-xl text-xs font-bold uppercase tracking-widest hover:bg-slate-200 dark:hover:bg-zinc-700 transition-colors"
               >
-                Download JSON
+                {t('download_json')}
               </button>
             </div>
             
@@ -320,14 +348,14 @@ export default function SettingsPage() {
               )}
             </AnimatePresence>
             <p className="text-[10px] text-slate-400 dark:text-zinc-500 leading-relaxed px-1">
-              Import multiple recipes from a JSON file. Ensure the format matches the expected recipe structure.
+              {t('import_description')}
             </p>
           </div>
         </div>
       </section>
 
       <section className="space-y-4">
-        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-red-500 ml-4">Danger Zone</h3>
+        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-red-500 ml-4">{t('danger_zone')}</h3>
         <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-red-100 dark:border-red-950/20 overflow-hidden shadow-sm">
           <button 
             onClick={() => setShowWipeModal(true)}
@@ -335,7 +363,7 @@ export default function SettingsPage() {
           >
             <div className="flex items-center gap-3 text-red-500">
               <Trash2 size={20} />
-              <span className="font-bold">Wipe All Recipes</span>
+              <span className="font-bold">{t('wipe_all_recipes')}</span>
             </div>
             <ChevronRight size={18} className="text-red-200 group-hover:text-red-400 transition-colors" />
           </button>
@@ -343,7 +371,7 @@ export default function SettingsPage() {
       </section>
 
       <div className="text-center pt-8">
-        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-300 dark:text-zinc-700">Made with 🧡 for local chefs</p>
+        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-300 dark:text-zinc-700">{t('made_with_love')}</p>
       </div>
 
       <AnimatePresence>
@@ -359,9 +387,9 @@ export default function SettingsPage() {
                 <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 text-red-500 rounded-full flex items-center justify-center">
                   <AlertTriangle size={32} />
                 </div>
-                <h3 className="text-xl font-black uppercase tracking-tight text-red-600">Danger Zone</h3>
+                <h3 className="text-xl font-black uppercase tracking-tight text-red-600">{t('danger_zone')}</h3>
                 <p className="text-sm text-slate-500 dark:text-zinc-400">
-                  Are you absolutely sure? This will permanently delete ALL your recipes. This action cannot be undone.
+                  {t('wipe_confirm_desc')}
                 </p>
               </div>
 
@@ -372,14 +400,14 @@ export default function SettingsPage() {
                   className="w-full py-3 bg-red-500 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2"
                 >
                   {isWiping ? <Loader2 className="animate-spin" size={18} /> : <Trash2 size={18} />}
-                  Yes, Wipe Everything
+                  {t('yes_wipe_everything')}
                 </button>
                 <button
                   disabled={isWiping}
                   onClick={() => setShowWipeModal(false)}
                   className="w-full py-3 bg-slate-100 dark:bg-zinc-800 rounded-xl font-bold text-sm"
                 >
-                  Cancel
+                  {t('cancel')}
                 </button>
               </div>
             </motion.div>

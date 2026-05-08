@@ -5,8 +5,10 @@ import { Label } from '../types';
 import { ArrowLeft, Plus, Trash2, Tag, Loader2, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLanguage } from '../lib/LanguageContext';
 
 export default function LabelManagementPage() {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [labels, setLabels] = useState<Label[]>([]);
   const [newLabelName, setNewLabelName] = useState('');
@@ -38,7 +40,7 @@ export default function LabelManagementPage() {
 
     const name = newLabelName.trim();
     if (labels.some(l => l.name.toLowerCase() === name.toLowerCase())) {
-      alert('Label already exists');
+      alert(t('label_exists'));
       return;
     }
 
@@ -52,19 +54,19 @@ export default function LabelManagementPage() {
       setNewLabelName('');
     } catch (err) {
       console.error(err);
-      alert('Failed to add label');
+      alert(t('failed_add_label'));
     } finally {
       setSaving(false);
     }
   };
 
   const handleDeleteLabel = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this label? It will be removed from all recipes.')) {
+    if (window.confirm(t('delete_label_confirm'))) {
       try {
         await deleteDoc(doc(db, 'labels', id));
       } catch (err) {
         console.error(err);
-        alert('Failed to delete label');
+        alert(t('failed_delete_label'));
       }
     }
   };
@@ -80,14 +82,14 @@ export default function LabelManagementPage() {
         <button onClick={() => navigate(-1)} className="p-2 -ml-2 text-slate-600 dark:text-zinc-400">
           <ArrowLeft size={24} />
         </button>
-        <h2 className="text-3xl font-black uppercase tracking-tighter leading-tight">Manage Labels</h2>
+        <h2 className="text-3xl font-black uppercase tracking-tighter leading-tight">{t('manage_labels')}</h2>
       </div>
 
       <form onSubmit={handleAddLabel} className="space-y-4">
         <div className="flex gap-2">
           <input
             type="text"
-            placeholder="New label name (e.g. Italian)"
+            placeholder={t('new_label_placeholder')}
             className="flex-1 px-4 py-3 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 focus:ring-2 focus:ring-primary-500/20 font-bold"
             value={newLabelName}
             onChange={(e) => setNewLabelName(e.target.value)}
@@ -103,7 +105,7 @@ export default function LabelManagementPage() {
       </form>
 
       <div className="space-y-3">
-        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-zinc-500 ml-4">Your Labels</h3>
+        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-zinc-500 ml-4">{t('your_labels')}</h3>
         {loading ? (
           <div className="flex justify-center py-10">
             <Loader2 className="animate-spin text-primary-500" size={32} />
@@ -135,7 +137,7 @@ export default function LabelManagementPage() {
           </div>
         ) : (
           <div className="text-center py-20 bg-white dark:bg-zinc-900 rounded-3xl border border-dashed border-slate-200 dark:border-zinc-800">
-            <p className="text-slate-400 dark:text-zinc-500">No labels created yet.</p>
+            <p className="text-slate-400 dark:text-zinc-500">{t('no_labels')}</p>
           </div>
         )}
       </div>

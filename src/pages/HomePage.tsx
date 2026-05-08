@@ -9,8 +9,10 @@ import { cn, formatTime, getLocalStorageItem, setLocalStorageItem } from '../lib
 import { RecipeCard } from '../components/RecipeCard';
 import { RecipeListItem } from '../components/RecipeListItem';
 import { useOnlineStatus } from '../lib/hooks';
+import { useLanguage } from '../lib/LanguageContext';
 
 export default function HomePage() {
+  const { t } = useLanguage();
   const isOnline = useOnlineStatus();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [labels, setLabels] = useState<Label[]>([]);
@@ -136,12 +138,12 @@ export default function HomePage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <h2 className="text-3xl font-black uppercase tracking-tighter leading-tight text-slate-800 dark:text-zinc-100">
-                All Recipes
+                {t('all_recipes')}
               </h2>
               {isSyncing && isOnline && (
                 <div className="flex items-center gap-1.5 px-2 py-0.5 bg-primary-100 dark:bg-primary-950/30 text-primary-600 dark:text-primary-400 rounded-full animate-pulse">
                   <Loader2 size={10} className="animate-spin" />
-                  <span className="text-[10px] font-bold uppercase tracking-widest">Syncing</span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest">{t('syncing')}</span>
                 </div>
               )}
             </div>
@@ -167,7 +169,7 @@ export default function HomePage() {
                       ? "bg-primary-500 text-white shadow-md shadow-primary-500/20"
                       : "text-slate-400 hover:text-primary-500"
                   )}
-                  aria-label="Show as cards"
+                  aria-label={t('view_cards')}
                 >
                   <LayoutGrid size={18} />
                 </button>
@@ -179,7 +181,7 @@ export default function HomePage() {
                       ? "bg-primary-500 text-white shadow-md shadow-primary-500/20"
                       : "text-slate-400 hover:text-primary-500"
                   )}
-                  aria-label="Show as list"
+                  aria-label={t('view_list')}
                 >
                   <List size={18} />
                 </button>
@@ -204,7 +206,7 @@ export default function HomePage() {
                 <div className="relative">
                   <input
                     type="text"
-                    placeholder="Search recipes or ingredients..."
+                    placeholder={t('search_placeholder')}
                     className="w-full px-4 py-3 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 focus:ring-2 focus:ring-primary-500/20 outline-none font-bold"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -255,7 +257,7 @@ export default function HomePage() {
               exit={{ scale: 0, opacity: 0 }}
               onClick={scrollToTop}
               className="p-3 bg-white dark:bg-zinc-900 text-primary-500 rounded-full shadow-xl border border-slate-100 dark:border-zinc-800 hover:scale-110 active:scale-95 transition-transform"
-              aria-label="Scroll to top"
+              aria-label={t('scroll_top')}
             >
               <ArrowUp size={20} />
             </motion.button>
@@ -276,7 +278,7 @@ export default function HomePage() {
                 }, 100);
               }}
               className="p-4 bg-primary-500 text-white rounded-full shadow-2xl shadow-primary-500/40 hover:scale-110 active:scale-95 transition-transform relative"
-              aria-label="Search recipes"
+              aria-label={t('search_recipes')}
             >
               <Search size={24} />
               {(searchTerm || selectedLabels.length > 0) && (
@@ -304,18 +306,18 @@ export default function HomePage() {
           ))
         ) : (
           <div className="text-center py-20 bg-white dark:bg-zinc-900 rounded-3xl border border-dashed border-slate-200 dark:border-zinc-800">
-            <p className="text-slate-400 dark:text-zinc-500">No recipes found.</p>
+            <p className="text-slate-400 dark:text-zinc-500">{t('no_recipes')}</p>
             {(searchTerm || selectedLabels.length > 0) ? (
               <button 
                 onClick={() => { setSearchTerm(''); setSelectedLabels([]); }}
                 className="mt-4 text-primary-500 font-bold uppercase tracking-widest text-xs"
               >
-                Clear Filters
+                {t('clear_filters')}
               </button>
             ) : (
               <Link to="/add" className="mt-4 inline-flex items-center gap-2 text-primary-500 font-medium">
                 <Plus size={18} />
-                Add your first recipe
+                {t('add_first_recipe')}
               </Link>
             )}
           </div>

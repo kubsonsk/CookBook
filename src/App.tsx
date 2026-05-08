@@ -14,9 +14,11 @@ import { onAuthStateChanged, User, signInWithPopup, GoogleAuthProvider, signOut 
 import { useOnlineStatus } from './lib/hooks';
 import { AccentColor, ACCENT_COLORS } from './lib/colors';
 import { ThemeContext, useTheme } from './lib/ThemeContext';
+import { LanguageProvider, useLanguage } from './lib/LanguageContext';
 
 function LoginPage() {
   const [loading, setLoading] = useState(false);
+  const { t } = useLanguage();
 
   const handleLogin = async () => {
     setLoading(true);
@@ -42,8 +44,8 @@ function LoginPage() {
           <div className="w-20 h-20 bg-primary-500 rounded-3xl flex items-center justify-center shadow-xl shadow-primary-500/20 text-white transition-colors duration-500">
             <ChefHat size={48} />
           </div>
-          <h1 className="text-4xl font-black tracking-tighter uppercase">CookBook</h1>
-          <p className="text-slate-500 dark:text-zinc-400 font-medium">Your personal AI-powered digital recipe box.</p>
+          <h1 className="text-4xl font-black tracking-tighter uppercase">{t('app_title')}</h1>
+          <p className="text-slate-500 dark:text-zinc-400 font-medium">{t('app_subtitle')}</p>
         </div>
 
         <button
@@ -56,12 +58,12 @@ function LoginPage() {
           ) : (
             <>
               <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/pwa_site/google.svg" className="w-5 h-5" alt="Google" referrerPolicy="no-referrer" />
-              Sign in with Google
+              {t('sign_in_google')}
             </>
           )}
         </button>
         
-        <p className="text-[10px] uppercase tracking-widest font-black text-slate-400">Secure Cloud Storage Included</p>
+        <p className="text-[10px] uppercase tracking-widest font-black text-slate-400">{t('secure_storage')}</p>
       </motion.div>
     </div>
   );
@@ -69,6 +71,7 @@ function LoginPage() {
 
 function OfflineBanner() {
   const isOnline = useOnlineStatus();
+  const { t } = useLanguage();
   
   return (
     <AnimatePresence>
@@ -81,7 +84,7 @@ function OfflineBanner() {
         >
           <div className="flex items-center justify-center gap-2 py-2 px-4 text-xs font-bold uppercase tracking-widest">
             <WifiOff size={14} />
-            Offline Mode Active
+            {t('offline_mode')}
           </div>
         </motion.div>
       )}
@@ -92,6 +95,7 @@ function OfflineBanner() {
 function Layout() {
   const location = useLocation();
   const mainRef = useRef<HTMLElement>(null);
+  const { t } = useLanguage();
 
   useEffect(() => {
     if (mainRef.current && location.pathname !== '/') {
@@ -100,9 +104,9 @@ function Layout() {
   }, [location.pathname]);
 
   const tabs = [
-    { path: '/', label: 'Recipes', icon: HomeIcon },
-    { path: '/add', label: 'Add', icon: PlusCircle },
-    { path: '/settings', label: 'Settings', icon: Settings },
+    { path: '/', label: t('recipes'), icon: HomeIcon },
+    { path: '/add', label: t('add'), icon: PlusCircle },
+    { path: '/settings', label: t('settings'), icon: Settings },
   ];
 
   return (
@@ -243,15 +247,19 @@ export default function App() {
 
   if (!user) {
     return (
-      <ThemeContext.Provider value={{ theme, toggleTheme, accentColor, setAccentColor }}>
-        <LoginPage />
-      </ThemeContext.Provider>
+      <LanguageProvider>
+        <ThemeContext.Provider value={{ theme, toggleTheme, accentColor, setAccentColor }}>
+          <LoginPage />
+        </ThemeContext.Provider>
+      </LanguageProvider>
     );
   }
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, accentColor, setAccentColor }}>
-      <RouterProvider router={router} />
-    </ThemeContext.Provider>
+    <LanguageProvider>
+      <ThemeContext.Provider value={{ theme, toggleTheme, accentColor, setAccentColor }}>
+        <RouterProvider router={router} />
+      </ThemeContext.Provider>
+    </LanguageProvider>
   );
 }
