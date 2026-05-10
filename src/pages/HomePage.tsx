@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, orderBy, writeBatch, doc } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { Recipe, Label } from '../types';
 import { Link } from 'react-router-dom';
-import { Plus, ChefHat, LayoutGrid, List, Loader2, Search, Tag as TagIcon, ArrowUp } from 'lucide-react';
+import { Plus, ChefHat, LayoutGrid, List, Loader2, Search, Tag as TagIcon, ArrowUp, Trash2, X, CheckSquare } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn, formatTime, getLocalStorageItem, setLocalStorageItem } from '../lib/utils';
 import { RecipeCard } from '../components/RecipeCard';
 import { RecipeListItem } from '../components/RecipeListItem';
 import { useOnlineStatus } from '../lib/hooks';
 import { useLanguage } from '../lib/LanguageContext';
+import { ContextMenu } from '../components/ContextMenu';
+import { ConfirmModal } from '../components/ConfirmModal';
 
 export default function HomePage() {
   const { t } = useLanguage();
@@ -26,6 +28,18 @@ export default function HomePage() {
 
   const [isSyncing, setIsSyncing] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+
+  // Selection & Context Menu State
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [selectedRecipeIds, setSelectedRecipeIds] = useState<Set<string>>(new Set());
+  const [contextMenu, setContextMenu] = useState<{ isOpen: boolean; x: number; y: number; recipeId: string | null }>({
+    isOpen: false,
+    x: 0,
+    y: 0,
+    recipeId: null
+  });
+  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
+  const [isDeletingBulk, setIsDeletingBulk] = useState(false);
 
   const scrollToTop = () => {
     const mainElement = document.querySelector('main');
@@ -126,12 +140,50 @@ export default function HomePage() {
     return matchesSearch && matchesLabels;
   });
 
+  const toggleRecipeSelection = (id: string) => {
+    setSelectedRecipeIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+        if (next.size === 0) setIsSelectionMode(false);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const handleLongPress = (id: string, x: number, y: number) => {
+    if (isSelectionMode) return;
+    setContextMenu({ isOpen: true, x, y, recipeId: id });
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedRecipeIds.size === 0) return;
+    setIsDeletingBulk(true);
+    try {
+      const batch = writeBatch(db);
+      selectedRecipeIds.forEach(id => {
+        batch.delete(doc(db, 'recipes', id));
+      });
+      await batch.commit();
+      setSelectedRecipeIds(new Set());
+      setIsSelectionMode(false);
+      setShowBulkDeleteConfirm(false);
+    } catch (error) {
+      console.error("Error deleting recipes:", error);
+      alert(t('failed_delete_recipe'));
+    } finally {
+      setIsDeletingBulk(false);
+    }
+  };
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
-      className="space-y-8"
+      className="space-y-8 pb-32"
     >
       <div className="space-y-6">
         <div className="flex flex-col gap-4 mt-4">
@@ -248,7 +300,10 @@ export default function HomePage() {
       </div>
 
       {/* Floating Action Buttons */}
-      <div className="fixed bottom-24 right-6 z-50 flex flex-col gap-3 items-center">
+      <div className={cn(
+        "fixed right-6 z-50 flex flex-col gap-3 items-center transition-all duration-300",
+        isSelectionMode ? "bottom-36" : "bottom-24"
+      )}>
         <AnimatePresence>
           {isScrolled && (
             <motion.button
@@ -299,9 +354,25 @@ export default function HomePage() {
         ) : filteredRecipes.length > 0 ? (
           filteredRecipes.map((recipe, index) => (
             viewMode === 'card' ? (
-              <RecipeCard key={recipe.id} recipe={recipe} index={index} />
+              <RecipeCard 
+                key={recipe.id} 
+                recipe={recipe} 
+                index={index}
+                isSelectionMode={isSelectionMode}
+                isSelected={selectedRecipeIds.has(recipe.id)}
+                onSelect={toggleRecipeSelection}
+                onLongPress={handleLongPress}
+              />
             ) : (
-              <RecipeListItem key={recipe.id} recipe={recipe} index={index} />
+              <RecipeListItem 
+                key={recipe.id} 
+                recipe={recipe} 
+                index={index}
+                isSelectionMode={isSelectionMode}
+                isSelected={selectedRecipeIds.has(recipe.id)}
+                onSelect={toggleRecipeSelection}
+                onLongPress={handleLongPress}
+              />
             )
           ))
         ) : (
@@ -323,6 +394,77 @@ export default function HomePage() {
           </div>
         )}
       </div>
+
+      <ContextMenu
+        isOpen={contextMenu.isOpen}
+        onClose={() => setContextMenu({ ...contextMenu, isOpen: false })}
+        position={{ x: contextMenu.x, y: contextMenu.y }}
+        items={[
+          {
+            label: t('select'),
+            icon: <CheckSquare size={18} />,
+            onClick: () => {
+              if (contextMenu.recipeId) {
+                setIsSelectionMode(true);
+                setSelectedRecipeIds(new Set([contextMenu.recipeId]));
+              }
+            }
+          }
+        ]}
+      />
+
+      <ConfirmModal
+        isOpen={showBulkDeleteConfirm}
+        onClose={() => setShowBulkDeleteConfirm(false)}
+        onConfirm={handleBulkDelete}
+        isLoading={isDeletingBulk}
+        title={t('delete_selected')}
+        description={
+          <div className="space-y-2">
+            <p>{t('delete_selected_confirm', { count: selectedRecipeIds.size })}</p>
+            <p className="text-xs font-bold text-red-500 uppercase tracking-widest">{t('bulk_delete_warning')}</p>
+          </div>
+        }
+      />
+
+      {/* Selection Mode Action Bar */}
+      <AnimatePresence>
+        {isSelectionMode && (
+          <motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            className="fixed bottom-24 left-6 right-6 z-[60] bg-slate-900 dark:bg-zinc-800 text-white p-4 rounded-3xl shadow-2xl flex items-center justify-between border border-slate-700 dark:border-zinc-700"
+          >
+            <div className="flex items-center gap-3">
+              <button 
+                onClick={() => {
+                  setIsSelectionMode(false);
+                  setSelectedRecipeIds(new Set());
+                }}
+                className="p-2 hover:bg-slate-800 dark:hover:bg-zinc-700 rounded-full transition-colors"
+              >
+                <X size={20} />
+              </button>
+              <div className="flex flex-col">
+                <span className="text-xs font-black uppercase tracking-widest text-slate-400">
+                  {t('selected_count', { count: selectedRecipeIds.size })}
+                </span>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowBulkDeleteConfirm(true)}
+                className="flex items-center gap-2 px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-2xl font-bold text-sm transition-all active:scale-95"
+              >
+                <Trash2 size={18} />
+                <span className="hidden sm:inline">{t('delete_selected')}</span>
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

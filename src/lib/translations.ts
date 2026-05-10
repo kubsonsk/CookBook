@@ -57,6 +57,13 @@ export const translations = {
     delete_confirm_title: "Are you sure you want to delete",
     delete_confirm_undone: "This action cannot be undone.",
     failed_delete_recipe: "Failed to delete recipe.",
+    select: "Select",
+    delete_selected: "Delete Selected",
+    delete_selected_confirm: "Are you sure you want to delete {count} recipes?",
+    bulk_delete_warning: "This will permanently delete all selected recipes.",
+    exit_selection: "Exit Selection",
+    confirm: "Confirm",
+    selected_count: "{count} selected",
     wipe_confirm_title: "Danger Zone",
     wipe_confirm_desc: "Are you absolutely sure? This will permanently delete ALL your recipes. This action cannot be undone.",
     yes_wipe_everything: "Yes, Wipe Everything",
@@ -185,7 +192,14 @@ export const translations = {
     delete_confirm_recipe: "Ste si istý, že chcete vymazať tento recept?",
     delete_confirm_title: "Naozaj chcete vymazať",
     delete_confirm_undone: "Túto akciu nie je možné vrátiť späť.",
-    failed_delete_recipe: "Nepodarilo sa vymazať recept.",
+    failed_delete_recipe: "Nepodarilo sa odstrániť recept.",
+    select: "Vybrať",
+    delete_selected: "Odstrániť vybrané",
+    delete_selected_confirm: "Naozaj chcete odstrániť {count} receptov?",
+    bulk_delete_warning: "Týmto natrvalo odstránite všetky vybrané recepty.",
+    exit_selection: "Ukončiť výber",
+    confirm: "Potvrdiť",
+    selected_count: "Vybrané: {count}",
     wipe_confirm_title: "Nebezpečná zóna",
     wipe_confirm_desc: "Ste si absolútne istý? Týmto natrvalo odstránite VŠETKY svoje recepty. Túto akciu nie je možné vrátiť späť.",
     yes_wipe_everything: "Áno, vymazať všetko",
@@ -226,7 +240,6 @@ export const translations = {
     video_url_placeholder: "URL videa (YouTube)",
     labels: "Štítky",
     selected: "vybrané",
-    selected_count: "Vybrané: {count}",
     find_label_placeholder: "Nájsť štítok...",
     ingredients: "Ingrediencie",
     ingredient_placeholder: "Ingrediencia",
@@ -267,7 +280,7 @@ export type TranslationKey =
   | 'app_title' | 'app_subtitle' | 'secure_storage' | 'offline_mode' | 'recipes' | 'all_recipes' | 'add' | 'settings' | 'syncing' | 'no_recipes' | 'go_home' | 'recipe_not_found' | 'search_placeholder' | 'clear_filters' | 'add_first_recipe' | 'view_cards' | 'view_list' | 'scroll_top' | 'search_recipes'
   | 'sign_in_google' | 'sign_out' | 'chef'
   | 'personalize_experience' | 'account' | 'appearance' | 'light_appearance' | 'dark_appearance' | 'accent_color' | 'organization' | 'manage_labels' | 'data_backup' | 'bulk_import' | 'bulk_export' | 'choose_json' | 'download_json' | 'import_description' | 'danger_zone' | 'wipe_all_recipes' | 'made_with_love' | 'language' | 'slovak' | 'english'
-  | 'delete_recipe' | 'delete_confirm_recipe' | 'delete_confirm_title' | 'delete_confirm_undone' | 'failed_delete_recipe' | 'wipe_confirm_title' | 'wipe_confirm_desc' | 'yes_wipe_everything' | 'cancel' | 'wipe_success' | 'wipe_error' | 'import_reading' | 'importing_count' | 'import_success' | 'import_error' | 'failed_extract_recipe' | 'failed_save_recipe' | 'unsaved_changes_title' | 'unsaved_changes_desc' | 'leave_discard' | 'stay_edit' | 'sync_conflict_title' | 'sync_conflict_desc' | 'use_server_version' | 'overwrite_my_changes'
+  | 'delete_recipe' | 'delete_confirm_recipe' | 'delete_confirm_title' | 'delete_confirm_undone' | 'failed_delete_recipe' | 'select' | 'delete_selected' | 'delete_selected_confirm' | 'bulk_delete_warning' | 'exit_selection' | 'confirm' | 'wipe_confirm_title' | 'wipe_confirm_desc' | 'yes_wipe_everything' | 'cancel' | 'wipe_success' | 'wipe_error' | 'import_reading' | 'importing_count' | 'import_success' | 'import_error' | 'failed_extract_recipe' | 'failed_save_recipe' | 'unsaved_changes_title' | 'unsaved_changes_desc' | 'leave_discard' | 'stay_edit' | 'sync_conflict_title' | 'sync_conflict_desc' | 'use_server_version' | 'overwrite_my_changes'
   | 'magic_import' | 'magic_import_desc' | 'magic_import_placeholder' | 'edit_recipe' | 'new_recipe' | 'update_recipe' | 'save_recipe' | 'recipe_title' | 'recipe_title_placeholder' | 'portions' | 'servings' | 'time_min' | 'time' | 'hero_image_url' | 'image_url_placeholder' | 'video_url_placeholder' | 'labels' | 'selected' | 'selected_count' | 'find_label_placeholder' | 'ingredients' | 'ingredient_placeholder' | 'qty_placeholder' | 'steps' | 'step_description_placeholder' | 'step_image_placeholder' | 'edit' | 'delete' | 'shopping_list_for' | 'ingredients_copied' | 'recipe_video' | 'send_reminders' | 'done_cooking'
   | 'your_labels' | 'no_labels' | 'new_label_placeholder' | 'label_exists' | 'failed_add_label' | 'delete_label_confirm' | 'failed_delete_label'
   | 'unit_g' | 'unit_kg' | 'unit_ml' | 'unit_l' | 'unit_pcs' | 'unit_tbsp' | 'unit_tsp' | 'unit_cup';
