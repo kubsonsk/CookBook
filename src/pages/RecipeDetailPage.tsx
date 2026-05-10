@@ -5,7 +5,7 @@ import { db } from '../lib/firebase';
 import { Recipe } from '../types';
 import { 
   ArrowLeft, Clock, Users, Edit, Trash2, 
-  Share2, Play, ChevronRight, CheckCircle2, ListChecks, Tag
+  Share2, Play, ChevronRight, CheckCircle2, ListChecks, Tag, Copy
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn, formatTime } from '../lib/utils';
@@ -45,6 +45,12 @@ export default function RecipeDetailPage() {
     if (window.confirm(t('delete_confirm_recipe'))) {
       await deleteDoc(doc(db, 'recipes', id!));
       navigate('/');
+    }
+  };
+
+  const handleDuplicate = () => {
+    if (recipe) {
+      navigate('/add', { state: { initialRecipe: recipe } });
     }
   };
 
@@ -90,6 +96,9 @@ export default function RecipeDetailPage() {
           <ArrowLeft size={24} />
         </button>
         <div className="flex gap-2">
+          <button onClick={handleDuplicate} className="p-2 text-slate-600 dark:text-zinc-400">
+            <Copy size={22} />
+          </button>
           <Link to={`/edit/${id}`} className="p-2 text-slate-600 dark:text-zinc-400">
             <Edit size={22} />
           </Link>

@@ -60,6 +60,14 @@ export default function RecipeFormPage() {
   const [originalUpdatedAt, setOriginalUpdatedAt] = useState<any>(null);
 
   useEffect(() => {
+    if (location.state?.initialRecipe) {
+      const { id, createdAt, updatedAt, ...rest } = location.state.initialRecipe;
+      setRecipe(rest);
+      setIsDirty(true);
+    }
+  }, [location.state]);
+
+  useEffect(() => {
     if (!auth.currentUser) return;
 
     const q = query(

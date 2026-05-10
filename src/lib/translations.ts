@@ -194,6 +194,7 @@ export const translations = {
     delete_confirm_undone: "Túto akciu nie je možné vrátiť späť.",
     failed_delete_recipe: "Nepodarilo sa odstrániť recept.",
     select: "Vybrať",
+    duplicate: "Duplikovať",
     delete_selected: "Odstrániť vybrané",
     delete_selected_confirm: "Naozaj chcete odstrániť {count} receptov?",
     bulk_delete_warning: "Týmto natrvalo odstránite všetky vybrané recepty.",

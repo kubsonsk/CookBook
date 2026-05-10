@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { collection, query, where, onSnapshot, orderBy, writeBatch, doc } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { Recipe, Label } from '../types';
-import { Link } from 'react-router-dom';
-import { Plus, ChefHat, LayoutGrid, List, Loader2, Search, Tag as TagIcon, ArrowUp, Trash2, X, CheckSquare } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Plus, ChefHat, LayoutGrid, List, Loader2, Search, Tag as TagIcon, ArrowUp, Trash2, X, CheckSquare, Copy } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn, formatTime, getLocalStorageItem, setLocalStorageItem } from '../lib/utils';
 import { RecipeCard } from '../components/RecipeCard';
@@ -15,6 +15,7 @@ import { ConfirmModal } from '../components/ConfirmModal';
 
 export default function HomePage() {
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const isOnline = useOnlineStatus();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [labels, setLabels] = useState<Label[]>([]);
@@ -400,6 +401,16 @@ export default function HomePage() {
         onClose={() => setContextMenu({ ...contextMenu, isOpen: false })}
         position={{ x: contextMenu.x, y: contextMenu.y }}
         items={[
+          {
+            label: t('duplicate'),
+            icon: <Copy size={18} />,
+            onClick: () => {
+              const recipeToDuplicate = recipes.find(r => r.id === contextMenu.recipeId);
+              if (recipeToDuplicate) {
+                navigate('/add', { state: { initialRecipe: recipeToDuplicate } });
+              }
+            }
+          },
           {
             label: t('select'),
             icon: <CheckSquare size={18} />,
