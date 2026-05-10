@@ -38,6 +38,8 @@ export const translations = {
     accent_color: "Accent Color",
     organization: "Organization",
     manage_labels: "Manage Labels",
+    manage_labels_recipe: "Manage Labels for Recipe",
+    save_labels: "Save Labels",
     data_backup: "Data & Backup",
     bulk_import: "Bulk Import",
     bulk_export: "Bulk Export",
@@ -174,6 +176,8 @@ export const translations = {
     accent_color: "Farba akcentu",
     organization: "Organizácia",
     manage_labels: "Spravovať štítky",
+    manage_labels_recipe: "Spravovať štítky receptu",
+    save_labels: "Uložiť štítky",
     data_backup: "Dáta a záloha",
     bulk_import: "Hromadný import",
     bulk_export: "Hromadný export",
@@ -280,7 +284,7 @@ export const translations = {
 export type TranslationKey = 
   | 'app_title' | 'app_subtitle' | 'secure_storage' | 'offline_mode' | 'recipes' | 'all_recipes' | 'add' | 'settings' | 'syncing' | 'no_recipes' | 'go_home' | 'recipe_not_found' | 'search_placeholder' | 'clear_filters' | 'add_first_recipe' | 'view_cards' | 'view_list' | 'scroll_top' | 'search_recipes'
   | 'sign_in_google' | 'sign_out' | 'chef'
-  | 'personalize_experience' | 'account' | 'appearance' | 'light_appearance' | 'dark_appearance' | 'accent_color' | 'organization' | 'manage_labels' | 'data_backup' | 'bulk_import' | 'bulk_export' | 'choose_json' | 'download_json' | 'import_description' | 'danger_zone' | 'wipe_all_recipes' | 'made_with_love' | 'language' | 'slovak' | 'english'
+  | 'personalize_experience' | 'account' | 'appearance' | 'light_appearance' | 'dark_appearance' | 'accent_color' | 'organization' | 'manage_labels' | 'manage_labels_recipe' | 'save_labels' | 'data_backup' | 'bulk_import' | 'bulk_export' | 'choose_json' | 'download_json' | 'import_description' | 'danger_zone' | 'wipe_all_recipes' | 'made_with_love' | 'language' | 'slovak' | 'english'
   | 'delete_recipe' | 'delete_confirm_recipe' | 'delete_confirm_title' | 'delete_confirm_undone' | 'failed_delete_recipe' | 'select' | 'delete_selected' | 'delete_selected_confirm' | 'bulk_delete_warning' | 'exit_selection' | 'confirm' | 'wipe_confirm_title' | 'wipe_confirm_desc' | 'yes_wipe_everything' | 'cancel' | 'wipe_success' | 'wipe_error' | 'import_reading' | 'importing_count' | 'import_success' | 'import_error' | 'failed_extract_recipe' | 'failed_save_recipe' | 'unsaved_changes_title' | 'unsaved_changes_desc' | 'leave_discard' | 'stay_edit' | 'sync_conflict_title' | 'sync_conflict_desc' | 'use_server_version' | 'overwrite_my_changes'
   | 'magic_import' | 'magic_import_desc' | 'magic_import_placeholder' | 'edit_recipe' | 'new_recipe' | 'update_recipe' | 'save_recipe' | 'recipe_title' | 'recipe_title_placeholder' | 'portions' | 'servings' | 'time_min' | 'time' | 'hero_image_url' | 'image_url_placeholder' | 'video_url_placeholder' | 'labels' | 'selected' | 'selected_count' | 'find_label_placeholder' | 'ingredients' | 'ingredient_placeholder' | 'qty_placeholder' | 'steps' | 'step_description_placeholder' | 'step_image_placeholder' | 'edit' | 'delete' | 'shopping_list_for' | 'ingredients_copied' | 'recipe_video' | 'send_reminders' | 'done_cooking'
   | 'your_labels' | 'no_labels' | 'new_label_placeholder' | 'label_exists' | 'failed_add_label' | 'delete_label_confirm' | 'failed_delete_label'

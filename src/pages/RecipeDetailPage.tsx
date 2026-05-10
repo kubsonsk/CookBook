@@ -3,6 +3,8 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { doc, getDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { Recipe } from '../types';
+import { RecipeListItem } from '../components/RecipeListItem';
+import { RecipeLabelModal } from '../components/RecipeLabelModal';
 import { 
   ArrowLeft, Clock, Users, Edit, Trash2, 
   Share2, Play, ChevronRight, CheckCircle2, ListChecks, Tag, Copy
@@ -20,6 +22,7 @@ export default function RecipeDetailPage() {
   const [loading, setLoading] = useState(true);
   const [servings, setServings] = useState(1);
   const [showVideo, setShowVideo] = useState(false);
+  const [isLabelModalOpen, setIsLabelModalOpen] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -96,6 +99,9 @@ export default function RecipeDetailPage() {
           <ArrowLeft size={24} />
         </button>
         <div className="flex gap-2">
+          <button onClick={() => setIsLabelModalOpen(true)} className="p-2 text-slate-600 dark:text-zinc-400">
+            <Tag size={22} />
+          </button>
           <button onClick={handleDuplicate} className="p-2 text-slate-600 dark:text-zinc-400">
             <Copy size={22} />
           </button>
@@ -107,6 +113,12 @@ export default function RecipeDetailPage() {
           </button>
         </div>
       </div>
+
+      <RecipeLabelModal
+        isOpen={isLabelModalOpen}
+        onClose={() => setIsLabelModalOpen(false)}
+        recipe={recipe}
+      />
 
       <div className="relative rounded-3xl overflow-hidden aspect-video shadow-xl shadow-slate-200 dark:shadow-none border border-slate-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 leading-none">
         {recipe.heroImageUrl ? (

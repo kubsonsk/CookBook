@@ -3,11 +3,12 @@ import { collection, query, where, onSnapshot, orderBy, writeBatch, doc } from '
 import { db, auth } from '../lib/firebase';
 import { Recipe, Label } from '../types';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, ChefHat, LayoutGrid, List, Loader2, Search, Tag as TagIcon, ArrowUp, Trash2, X, CheckSquare, Copy } from 'lucide-react';
+import { Plus, ChefHat, LayoutGrid, List, Loader2, Search, Tag as TagIcon, ArrowUp, Trash2, X, CheckSquare, Copy, Tag } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn, formatTime, getLocalStorageItem, setLocalStorageItem } from '../lib/utils';
 import { RecipeCard } from '../components/RecipeCard';
 import { RecipeListItem } from '../components/RecipeListItem';
+import { RecipeLabelModal } from '../components/RecipeLabelModal';
 import { useOnlineStatus } from '../lib/hooks';
 import { useLanguage } from '../lib/LanguageContext';
 import { ContextMenu } from '../components/ContextMenu';
@@ -41,6 +42,8 @@ export default function HomePage() {
   });
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
   const [isDeletingBulk, setIsDeletingBulk] = useState(false);
+  const [isLabelModalOpen, setIsLabelModalOpen] = useState(false);
+  const [recipeForLabels, setRecipeForLabels] = useState<Recipe | null>(null);
 
   const scrollToTop = () => {
     const mainElement = document.querySelector('main');
@@ -402,6 +405,17 @@ export default function HomePage() {
         position={{ x: contextMenu.x, y: contextMenu.y }}
         items={[
           {
+            label: t('manage_labels'),
+            icon: <Tag size={18} />,
+            onClick: () => {
+              const recipe = recipes.find(r => r.id === contextMenu.recipeId);
+              if (recipe) {
+                setRecipeForLabels(recipe);
+                setIsLabelModalOpen(true);
+              }
+            }
+          },
+          {
             label: t('duplicate'),
             icon: <Copy size={18} />,
             onClick: () => {
@@ -422,6 +436,15 @@ export default function HomePage() {
             }
           }
         ]}
+      />
+
+      <RecipeLabelModal
+        isOpen={isLabelModalOpen}
+        onClose={() => {
+          setIsLabelModalOpen(false);
+          setRecipeForLabels(null);
+        }}
+        recipe={recipeForLabels}
       />
 
       <ConfirmModal
